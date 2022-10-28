@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerInputReceiver : InputReceiver
 {
     [SerializeField] Transform m_viewInputTransform = null;
+    [SerializeField] float m_minimumMovementMagnitude = 0.01f;
 
     public Transform viewInputTransform { get { return m_viewInputTransform; } set { m_viewInputTransform = value; } }
 
@@ -14,7 +15,16 @@ public class PlayerInputReceiver : InputReceiver
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.z = Input.GetAxisRaw("Vertical");
 
-        moveInput = Vector3.ClampMagnitude(moveInput, 1.0f);
+        float mag = moveInput.magnitude;
+        if(mag < m_minimumMovementMagnitude)
+        {
+            return Vector3.zero;
+        }
+        if(mag > 1.0f)
+        {
+            moveInput = moveInput / mag;
+        }
+        //moveInput = Vector3.ClampMagnitude(moveInput, 1.0f);
 
         return ConvertInput(moveInput);
     }
