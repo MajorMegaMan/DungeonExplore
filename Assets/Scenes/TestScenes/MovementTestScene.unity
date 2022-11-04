@@ -766,6 +766,7 @@ GameObject:
   - component: {fileID: 518598492}
   - component: {fileID: 518598491}
   - component: {fileID: 518598490}
+  - component: {fileID: 518598493}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -852,6 +853,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &518598493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 518598489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d0cd5dd0b2711e4eb65ebce2fa5d56b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_inputReceiver: {fileID: 1025490083}
+  debugAnim: {fileID: 1456622285}
+  debugAttackState:
+    m_name: Attack_1
 --- !u!1 &567519234
 GameObject:
   m_ObjectHideFlags: 0
@@ -1341,6 +1358,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_viewInputTransform: {fileID: 234211404}
+  m_minimumMovementMagnitude: 0.01
 --- !u!1 &1040008772
 GameObject:
   m_ObjectHideFlags: 0
@@ -1972,6 +1990,12 @@ MonoBehaviour:
   m_standEuler: {x: 0, y: 0, z: 0}
   m_walkEuler: {x: 0, y: 0, z: 0}
   m_runEuler: {x: 0, y: 40, z: 0}
+--- !u!95 &1456622285 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 112fd0b0138917a46b71b6005a49f731,
+    type: 3}
+  m_PrefabInstance: {fileID: 1456622281}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1566284599
 GameObject:
   m_ObjectHideFlags: 0
