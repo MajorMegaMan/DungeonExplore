@@ -48,6 +48,8 @@ public class PlayerCameraController : MonoBehaviour
     public float cameraAngleOverride { get { return m_cameraAngleOverride; } set { m_cameraAngleOverride = value; } }
     public bool lockCameraPosition { get { return m_lockCameraPosition; } set { m_lockCameraPosition = value; } }
 
+    public float targetYaw { get { return m_cinemachineTargetYaw; } }
+    public float targetPitch { get { return m_cinemachineTargetPitch; } }
 
     private void Start()
     {
@@ -99,5 +101,11 @@ public class PlayerCameraController : MonoBehaviour
         if (lfAngle < -360f) lfAngle += 360f;
         if (lfAngle > 360f) lfAngle -= 360f;
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
+    }
+
+    public void SetTargetEuler(float pitch, float yaw)
+    {
+        m_cinemachineTargetYaw = yaw;
+        m_cinemachineTargetPitch = pitch;
     }
 }
