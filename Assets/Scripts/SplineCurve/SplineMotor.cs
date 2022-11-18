@@ -24,7 +24,10 @@ public class SplineMotor : MonoBehaviour
         float lineLength = m_splineCurve.GetLineSegmentLength(lineIndex);
         t += Time.deltaTime * (speed / lineLength);
         transform.position = m_splineCurve.GetSplinePoint(t);
-        transform.forward = m_splineCurve.GetSplineGradient(t);
+
+        //transform.forward = m_splineCurve.GetSplineGradient(t);
+        transform.LookAt(transform.position + m_splineCurve.GetSplineGradient(t), m_splineCurve.GetSplineUp(t));
+
         SetValue(t / splineCount);
     }
 
