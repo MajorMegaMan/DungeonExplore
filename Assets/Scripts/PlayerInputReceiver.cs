@@ -9,6 +9,7 @@ public class PlayerInputReceiver : InputReceiver
 
     public Transform viewInputTransform { get { return m_viewInputTransform; } set { m_viewInputTransform = value; } }
 
+    #region ReadInputs
     public override Vector3 GetMovement()
     {
         Vector3 moveInput = Vector3.zero;
@@ -61,4 +62,10 @@ public class PlayerInputReceiver : InputReceiver
     {
         return Input.GetKeyDown(KeyCode.Space);
     }
+
+    public bool GetLockOnDown()
+    {
+        return Input.GetKeyDown(KeyCode.Tab);
+    }
+    #endregion // ! ReadInputs
 }

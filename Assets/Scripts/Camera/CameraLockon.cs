@@ -5,9 +5,11 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerCameraController))]
 public class CameraLockon : MonoBehaviour
 {
-    [SerializeField] Transform m_viewTransform;
+    [SerializeField] PlayerInputReceiver m_playerInput;
+    //[SerializeField] Transform m_viewTransform;
     [SerializeField] Transform m_origin;
-    [SerializeField] Transform m_lockOnTarget;
+    [SerializeField] GameObject m_lockOnObject;
+    ILockOnTarget m_lockOnTarget;
 
     [SerializeField] float m_lerpAmount = 0.5f;
     [SerializeField] float m_distanceDegradeRatio = 1.0f;
@@ -19,6 +21,8 @@ public class CameraLockon : MonoBehaviour
 
     [SerializeField] float m_smoothTime = 0.1f;
     Vector2 m_smoothVelocity = Vector2.zero;
+
+    public bool isLockedOn { get { return m_lockOnTarget != null; } }
 
     private void Awake()
     {
@@ -41,10 +45,35 @@ public class CameraLockon : MonoBehaviour
         }
     }
 
+    public void SetLockOnObject(GameObject lockOnObject)
+    {
+        if (m_lockOnObject == null)
+        {
+            m_lockOnTarget = null;
+            return;
+        }
+
+        var lockOnTarget = m_lockOnObject.GetComponent<ILockOnTarget>();
+        if (lockOnTarget != null)
+        {
+            m_lockOnTarget = lockOnTarget;
+        }
+        else
+        {
+            Debug.LogError("LockOnObject must have an ILockOnTarget Compatible Component.");
+            m_lockOnObject = null;
+        }
+    }
+
+    public void SetLockOnTarget(ILockOnTarget lockOnTarget)
+    {
+        m_lockOnTarget = lockOnTarget;
+    }
+
     void SetLockOnPosition()
     {
         float t = m_lerpAmount;
-        float targetDistance = (m_lockOnTarget.position - m_origin.position).magnitude;
+        float targetDistance = (m_lockOnTarget.GetTargetPosition() - m_origin.position).magnitude;
         if(targetDistance > debugCamDistance)
         {
             t = debugCamDistance / targetDistance;
@@ -52,7 +81,7 @@ public class CameraLockon : MonoBehaviour
             t *= m_distanceDegradeRatio;
             t += m_lerpAmount;
         }
-        transform.position = Vector3.Lerp(m_origin.position, m_lockOnTarget.position, t);
+        transform.position = Vector3.Lerp(m_origin.position, m_lockOnTarget.GetTargetPosition(), t);
     }
 
     void SetRotation()
@@ -65,13 +94,13 @@ public class CameraLockon : MonoBehaviour
 
     Quaternion CalcTargetLookRotation()
     {
-        Vector3 toLockOn = (m_lockOnTarget.position - m_origin.position).normalized;
-        float viewDot = Vector3.Dot(toLockOn, m_viewTransform.forward);
+        Vector3 toLockOn = (m_lockOnTarget.GetTargetPosition() - m_origin.position).normalized;
+        float viewDot = Vector3.Dot(toLockOn, m_playerInput.viewInputTransform.forward);
 
         if (viewDot > Mathf.Cos(m_angleFocus * Mathf.Deg2Rad))
         {
             // too much alignment
-            Vector3 originToView = m_viewTransform.position - m_origin.position;
+            Vector3 originToView = m_playerInput.viewInputTransform.position - m_origin.position;
             float viewSign = Mathf.Sign(Vector3.Dot(originToView, Vector3.Cross(Vector3.up, toLockOn)));
 
             toLockOn = Quaternion.AngleAxis(m_angleFocus * -viewSign, Vector3.up) * toLockOn;
@@ -89,12 +118,23 @@ public class CameraLockon : MonoBehaviour
 
     private void OnValidate()
     {
-        if(Application.isPlaying)
+        SetLockOnObject(m_lockOnObject);
+
+        if (Application.isPlaying)
         {
-            if(m_origin != null && m_lockOnTarget == null)
+            if (m_origin != null && m_lockOnTarget == null)
             {
                 transform.position = m_origin.position;
             }
         }
     }
+}
+
+public interface ILockOnTarget
+{
+    Vector3 GetTargetPosition();
+
+    Bounds GetAABB();
+
+    Transform GetTransform();
 }
