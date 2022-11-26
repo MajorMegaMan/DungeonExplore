@@ -22,6 +22,7 @@ public class CameraLockon : MonoBehaviour
     [SerializeField] float m_smoothTime = 0.1f;
     Vector2 m_smoothVelocity = Vector2.zero;
 
+    public ILockOnTarget lockOnTarget { get { return m_lockOnTarget; } }
     public bool isLockedOn { get { return m_lockOnTarget != null; } }
 
     private void Awake()

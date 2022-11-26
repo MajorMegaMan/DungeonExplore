@@ -904,6 +904,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_inputReceiver: {fileID: 1025490083}
+  m_playerController: {fileID: 518598491}
+  m_lockOn: {fileID: 1975737649}
   debugAnim: {fileID: 1456622285}
   debugAttackState:
     m_name: Attack_1
@@ -2361,6 +2363,8 @@ MonoBehaviour:
   m_playerController: {fileID: 518598491}
   m_movementParameter:
     m_name: MoveSpeed
+  m_horizontalMovementParameter:
+    m_name: HorizontalMoveSpeed
   m_speedCurve:
     serializedVersion: 2
     m_Curve:
@@ -2407,6 +2411,7 @@ MonoBehaviour:
   m_standEuler: {x: 0, y: 0, z: 0}
   m_walkEuler: {x: 0, y: 0, z: 0}
   m_runEuler: {x: 0, y: 40, z: 0}
+  m_camLockOn: {fileID: 1975737649}
 --- !u!95 &1456622285 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 112fd0b0138917a46b71b6005a49f731,

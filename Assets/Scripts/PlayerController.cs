@@ -59,6 +59,10 @@ public class PlayerController : MonoBehaviour
 
     const float GROUND_ERROR = 0.1f;
 
+    // Action variables
+    BBB.SimpleTimer m_actionTimer;
+    IPlayerMoveAction m_currentMoveAction;
+
     // Getters
     public float speed { get { return m_speed; } }
     public Vector3 velocity { get { return m_velocity; } }
@@ -86,6 +90,8 @@ public class PlayerController : MonoBehaviour
         }
 
         m_jumpSquatTimer.targetReachedEvent.AddListener(JumpRelease);
+
+        m_actionTimer = new BBB.SimpleTimer();
     }
 
     // Start is called before the first frame update
@@ -113,6 +119,11 @@ public class PlayerController : MonoBehaviour
     void UpdateMovement()
     {
         Vector3 moveDir = m_moveInput;
+        UpdateMovement(m_moveInput);
+    }
+
+    void UpdateMovement(Vector3 moveDir)
+    {
         float inputMagnitude = moveDir.magnitude;
 
         Vector3 acceleration = (moveDir * m_acceleration * Time.deltaTime);
@@ -206,13 +217,34 @@ public class PlayerController : MonoBehaviour
         m_airjumpEvent.Invoke();
     }
 
+    public void BeginAction(IPlayerMoveAction playerAction)
+    {
+        m_actionTimer.targetTime = playerAction.GetActionTime();
+
+        m_currentMoveAction = playerAction;
+        m_groundedStateMachine.ChangeToState(GroundedStateEnum.actioned);
+    }
+
+    void SmartSetControllableState()
+    {
+        if (CheckForGroundUpdate())
+        {
+            m_groundedStateMachine.ChangeToState(GroundedStateEnum.grounded);
+        }
+        else
+        {
+            m_groundedStateMachine.ChangeToState(GroundedStateEnum.airborne);
+        }
+    }
+
     #region GroundedStates
 
     public enum GroundedStateEnum
     {
         grounded,
         airborne,
-        jumpSquat
+        jumpSquat,
+        actioned
     }
 
     void InitialiseStateMachine()
@@ -222,6 +254,7 @@ public class PlayerController : MonoBehaviour
         groundedStates[(int)GroundedStateEnum.grounded] = new GroundedState();
         groundedStates[(int)GroundedStateEnum.airborne] = new AirborneState();
         groundedStates[(int)GroundedStateEnum.jumpSquat] = new JumpSquatState();
+        groundedStates[(int)GroundedStateEnum.actioned] = new ActionState();
 
         m_groundedStateMachine = new PackagedStateMachine<PlayerController>(this, groundedStates);
     }
@@ -367,6 +400,32 @@ public class PlayerController : MonoBehaviour
             }
 
             owner.UpdateMovement();
+        }
+    }
+
+    class ActionState : IState<PlayerController>
+    {
+        void IState<PlayerController>.Enter(PlayerController owner)
+        {
+            owner.m_actionTimer.Reset();
+        }
+
+        void IState<PlayerController>.Exit(PlayerController owner)
+        {
+            
+        }
+
+        void IState<PlayerController>.Invoke(PlayerController owner)
+        {
+            owner.m_actionTimer.Tick(Time.deltaTime);
+            Vector3 toDestination = owner.m_currentMoveAction.GetDestination() - owner.transform.position;
+
+            owner.UpdateMovement(Vector3.ClampMagnitude(toDestination, 1.0f));
+            if(owner.m_actionTimer.IsTargetReached())
+            {
+                // action is completed
+                owner.SmartSetControllableState();
+            }
         }
     }
     #endregion // ! GroundedStates
