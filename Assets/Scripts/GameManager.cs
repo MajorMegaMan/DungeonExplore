@@ -39,7 +39,7 @@ public class GameManager : BBB.SimpleMonoSingleton<GameManager>
                 {
                     m_cameraLockOn.SetLockOnTarget(lockOnTarget);
                     m_lockOnReticle.gameObject.SetActive(true);
-                    m_lockOnReticle.SetTargetFollow(lockOnTarget.GetTransform());
+                    m_lockOnReticle.SetTargetFollow(lockOnTarget.GetCameraLookTransform());
                 }
             }
             else
@@ -81,7 +81,7 @@ public class GameManager : BBB.SimpleMonoSingleton<GameManager>
         Vector3 camToTarget = (focusedTarget.GetTargetPosition() - m_camera.transform.position).normalized;
         float focusedDot = Vector3.Dot(m_camera.transform.forward, camToTarget);
 
-        Debug.Log(focusedTarget.GetTransform().parent.name);
+        Debug.Log(focusedTarget.GetCameraLookTransform().parent.name);
         for (int i = 1; i < m_visibleLockOnTargets.Count; i++)
         {
             // Simple Distance check for now
@@ -94,7 +94,7 @@ public class GameManager : BBB.SimpleMonoSingleton<GameManager>
                 focusedTarget = target;
                 focusedDot = dot;
 
-                Debug.Log(focusedTarget.GetTransform().parent.name);
+                Debug.Log(focusedTarget.GetCameraLookTransform().parent.name);
             }
         }
 

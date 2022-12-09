@@ -22,6 +22,9 @@ public class CameraLockon : MonoBehaviour
     [SerializeField] float m_smoothTime = 0.1f;
     Vector2 m_smoothVelocity = Vector2.zero;
 
+
+    float m_currentCamDistance = 0.0f;
+
     public ILockOnTarget lockOnTarget { get { return m_lockOnTarget; } }
     public bool isLockedOn { get { return m_lockOnTarget != null; } }
 
@@ -41,13 +44,16 @@ public class CameraLockon : MonoBehaviour
     {
         if(m_lockOnTarget != null)
         {
-            SetLockOnPosition();
-            SetRotation();
+            Vector3 pos = m_lockOnTarget.GetCameraLookTransform().position;
+            m_currentCamDistance = (pos - m_origin.position).magnitude;
+            SetLockOnPosition(pos);
+            SetRotation(pos);
         }
     }
 
     public void SetLockOnObject(GameObject lockOnObject)
     {
+        m_lockOnObject = lockOnObject;
         if (m_lockOnObject == null)
         {
             m_lockOnTarget = null;
@@ -69,33 +75,40 @@ public class CameraLockon : MonoBehaviour
     public void SetLockOnTarget(ILockOnTarget lockOnTarget)
     {
         m_lockOnTarget = lockOnTarget;
+        if (m_lockOnTarget == null)
+        {
+            transform.position = m_origin.position;
+        }
     }
 
-    void SetLockOnPosition()
+    void SetLockOnPosition(Vector3 targetPos)
     {
         float t = m_lerpAmount;
-        float targetDistance = (m_lockOnTarget.GetTargetPosition() - m_origin.position).magnitude;
-        if(targetDistance > debugCamDistance)
+        if(m_currentCamDistance > debugCamDistance)
         {
-            t = debugCamDistance / targetDistance;
+            t = debugCamDistance / m_currentCamDistance;
             t -= 1.0f;
             t *= m_distanceDegradeRatio;
             t += m_lerpAmount;
         }
-        transform.position = Vector3.Lerp(m_origin.position, m_lockOnTarget.GetTargetPosition(), t);
+        transform.position = Vector3.Lerp(m_origin.position, targetPos, t);
     }
 
-    void SetRotation()
+    void SetRotation(Vector3 targetPos)
     {
-        Vector3 targetEuler = CalculateTargetEuler();
+        Vector3 targetEuler = CalculateTargetEuler(targetPos);
         float smoothPitch = Mathf.SmoothDampAngle(m_camControl.targetPitch, targetEuler.x, ref m_smoothVelocity.x, m_smoothTime);
         float smoothYaw = Mathf.SmoothDampAngle(m_camControl.targetYaw, targetEuler.y, ref m_smoothVelocity.y, m_smoothTime);
         m_camControl.SetTargetEuler(smoothPitch, smoothYaw);
     }
 
-    Quaternion CalcTargetLookRotation()
+    Quaternion CalcTargetLookRotation(Vector3 targetPos)
     {
-        Vector3 toLockOn = (m_lockOnTarget.GetTargetPosition() - m_origin.position).normalized;
+        Vector3 toLockOn = Vector3.zero;
+        if(m_currentCamDistance > 0.0001f)
+        {
+            toLockOn = (targetPos - m_origin.position) / m_currentCamDistance;
+        }
         float viewDot = Vector3.Dot(toLockOn, m_playerInput.viewInputTransform.forward);
 
         if (viewDot > Mathf.Cos(m_angleFocus * Mathf.Deg2Rad))
@@ -111,9 +124,9 @@ public class CameraLockon : MonoBehaviour
         return targetLookRot;
     }
 
-    Vector3 CalculateTargetEuler()
+    Vector3 CalculateTargetEuler(Vector3 targetPos)
     {
-        Quaternion targetLookRot = CalcTargetLookRotation();
+        Quaternion targetLookRot = CalcTargetLookRotation(targetPos);
         return targetLookRot.eulerAngles;
     }
 
@@ -129,6 +142,21 @@ public class CameraLockon : MonoBehaviour
             }
         }
     }
+
+    private void OnDrawGizmos()
+    {
+        if(isLockedOn)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.DrawLine(Vector3.zero, Vector3.forward * m_currentCamDistance);
+
+            Gizmos.matrix = Matrix4x4.identity;
+            Gizmos.DrawSphere(lockOnTarget.GetTargetPosition(), 0.2f);
+
+            Gizmos.DrawSphere(transform.position, 0.2f);
+        }
+    }
 }
 
 public interface ILockOnTarget
@@ -137,5 +165,7 @@ public interface ILockOnTarget
 
     Bounds GetAABB();
 
-    Transform GetTransform();
+    Transform GetCameraLookTransform();
+
+    float GetTargetRadius();
 }

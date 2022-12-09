@@ -6,6 +6,7 @@ public class SimpleLockOnTarget : MonoBehaviour, ILockOnTarget
 {
     [SerializeField] Transform m_lockOnTransform;
     [SerializeField] Renderer m_renderer;
+    [SerializeField] float m_targetRadius = 1.0f;
 
     private void Start()
     {
@@ -31,8 +32,13 @@ public class SimpleLockOnTarget : MonoBehaviour, ILockOnTarget
         return m_renderer.bounds;
     }
 
-    public Transform GetTransform()
+    public Transform GetCameraLookTransform()
     {
         return m_lockOnTransform;
+    }
+
+    public float GetTargetRadius()
+    {
+        return m_targetRadius;
     }
 }

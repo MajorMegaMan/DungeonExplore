@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 namespace BBB
 {
-    [SerializeField]
+    [System.Serializable]
     public class SimpleTimer
     {
         public float targetTime = 1.0f;

@@ -122,7 +122,7 @@ public class PlayerController : MonoBehaviour
         UpdateMovement(m_moveInput);
     }
 
-    void UpdateMovement(Vector3 moveDir)
+    public void UpdateMovement(Vector3 moveDir)
     {
         float inputMagnitude = moveDir.magnitude;
 
@@ -418,9 +418,8 @@ public class PlayerController : MonoBehaviour
         void IState<PlayerController>.Invoke(PlayerController owner)
         {
             owner.m_actionTimer.Tick(Time.deltaTime);
-            Vector3 toDestination = owner.m_currentMoveAction.GetDestination() - owner.transform.position;
+            owner.m_currentMoveAction.PerformAction(owner, owner.m_actionTimer.normalisedTime);
 
-            owner.UpdateMovement(Vector3.ClampMagnitude(toDestination, 1.0f));
             if(owner.m_actionTimer.IsTargetReached())
             {
                 // action is completed

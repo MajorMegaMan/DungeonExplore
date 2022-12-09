@@ -26,7 +26,7 @@ public class PlayerAnimate : MonoBehaviour
     float m_smoothHoriSpeed = 0.0f;
     float m_smoothSpeedVel = 0.0f;
     float m_smoothHoriSpeedVel = 0.0f;
-    float m_smoothSpeedTime = 0.02f;
+    [SerializeField] float m_smoothSpeedTime = 0.02f;
 
     [Header("Lock on Var")]
     [SerializeField] CameraLockon m_camLockOn;

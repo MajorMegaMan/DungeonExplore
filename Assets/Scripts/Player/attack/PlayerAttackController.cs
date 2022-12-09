@@ -15,13 +15,14 @@ public class PlayerAttackController : MonoBehaviour
     bool m_isAttacking = false;
 
     [SerializeField] Animator debugAnim;
-    [SerializeField] AnimationStateID debugAttackState;
+    [SerializeField] PlayerAttackAction debug_attackAction;
 
     // Start is called before the first frame update
     void Start()
     {
+        debug_attackAction.Initialise(m_playerController.transform);
+
         m_attackUpdate = TryBeginAttack;
-        debugAttackState.Initialise();
     }
 
     // Update is called once per frame
@@ -41,20 +42,22 @@ public class PlayerAttackController : MonoBehaviour
             }
             m_attackUpdate = PerformingAttack;
             m_isAttacking = true;
-            m_attackTimer.Reset();
 
-            debugAnim.CrossFade(debugAttackState.GetID(), 0.0f);
+            m_attackTimer.targetTime = debug_attackAction.readyTime;
+            m_attackTimer.Reset();
 
             IPlayerMoveAction attackAction;
             if (m_lockOn.isLockedOn)
             {
-                attackAction = new LockOnAttack(m_attackTimer.targetTime, m_lockOn.lockOnTarget);
+                attackAction = debug_attackAction.BeginLockOnAttack(m_lockOn.lockOnTarget);
             }
             else
             {
-                attackAction = new StraightAttack(m_attackTimer.targetTime, m_playerController.transform, m_playerController.heading * m_attackTimer.targetTime * 5);
+                attackAction = debug_attackAction.BeginStraghtAttack(m_playerController.heading * m_attackTimer.targetTime * 5);
             }
             m_playerController.BeginAction(attackAction);
+
+            debugAnim.CrossFade(debug_attackAction.GetAnimationHashID(), debug_attackAction.animationTransitionTime, 0, 0.0f);
         }
     }
 
