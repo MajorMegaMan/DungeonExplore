@@ -10,16 +10,12 @@ public class SimpleLockOnTarget : MonoBehaviour, ILockOnTarget
 
     private void Start()
     {
-        GameManager.instance.RegisterLockOnTarget(this);
+        LockOnManager.RegisterLockOnTarget(this);
     }
 
     private void OnDestroy()
     {
-        var gameManager = GameManager.instance;
-        if (gameManager != null)
-        {
-            gameManager.DeregisterLockOnTarget(this);
-        }
+        LockOnManager.DeregisterLockOnTarget(this);
     }
 
     public Vector3 GetTargetPosition()

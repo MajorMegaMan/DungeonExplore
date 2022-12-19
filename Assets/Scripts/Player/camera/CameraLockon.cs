@@ -5,8 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerCameraController))]
 public class CameraLockon : MonoBehaviour
 {
-    [SerializeField] PlayerInputReceiver m_playerInput;
-    //[SerializeField] Transform m_viewTransform;
+    [SerializeField] LockOnReticle m_lockOnReticle;
+
     [SerializeField] Transform m_origin;
     [SerializeField] GameObject m_lockOnObject;
     ILockOnTarget m_lockOnTarget;
@@ -28,6 +28,8 @@ public class CameraLockon : MonoBehaviour
     public ILockOnTarget lockOnTarget { get { return m_lockOnTarget; } }
     public bool isLockedOn { get { return m_lockOnTarget != null; } }
 
+    PlayerInputReceiver inputReceiver { get { return m_camControl.inputReceiver; } }
+
     private void Awake()
     {
         m_camControl = GetComponent<PlayerCameraController>();
@@ -36,13 +38,32 @@ public class CameraLockon : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        m_lockOnReticle.SetCamera(inputReceiver.playerViewCamera);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(m_lockOnTarget != null)
+        if (inputReceiver.GetLockOnDown())
+        {
+            if (!isLockedOn)
+            {
+                var lockOnTarget = LockOnManager.FindLockOnTarget(inputReceiver.playerViewCamera);
+                if (lockOnTarget != null)
+                {
+                    SetLockOnTarget(lockOnTarget);
+                    m_lockOnReticle.gameObject.SetActive(true);
+                    m_lockOnReticle.SetTargetFollow(lockOnTarget.GetCameraLookTransform());
+                }
+            }
+            else
+            {
+                SetLockOnTarget(null);
+                m_lockOnReticle.gameObject.SetActive(false);
+            }
+        }
+
+        if (m_lockOnTarget != null)
         {
             Vector3 pos = m_lockOnTarget.GetCameraLookTransform().position;
             m_currentCamDistance = (pos - m_origin.position).magnitude;
@@ -77,7 +98,7 @@ public class CameraLockon : MonoBehaviour
         m_lockOnTarget = lockOnTarget;
         if (m_lockOnTarget == null)
         {
-            transform.position = m_origin.position;
+            m_camControl.cinemachineCameraTarget.transform.position = m_origin.position;
         }
     }
 
@@ -91,7 +112,7 @@ public class CameraLockon : MonoBehaviour
             t *= m_distanceDegradeRatio;
             t += m_lerpAmount;
         }
-        transform.position = Vector3.Lerp(m_origin.position, targetPos, t);
+        m_camControl.cinemachineCameraTarget.transform.position = Vector3.Lerp(m_origin.position, targetPos, t);
     }
 
     void SetRotation(Vector3 targetPos)
@@ -109,12 +130,12 @@ public class CameraLockon : MonoBehaviour
         {
             toLockOn = (targetPos - m_origin.position) / m_currentCamDistance;
         }
-        float viewDot = Vector3.Dot(toLockOn, m_playerInput.viewInputTransform.forward);
+        float viewDot = Vector3.Dot(toLockOn, inputReceiver.viewInputTransform.forward);
 
         if (viewDot > Mathf.Cos(m_angleFocus * Mathf.Deg2Rad))
         {
             // too much alignment
-            Vector3 originToView = m_playerInput.viewInputTransform.position - m_origin.position;
+            Vector3 originToView = inputReceiver.viewInputTransform.position - m_origin.position;
             float viewSign = Mathf.Sign(Vector3.Dot(originToView, Vector3.Cross(Vector3.up, toLockOn)));
 
             toLockOn = Quaternion.AngleAxis(m_angleFocus * -viewSign, Vector3.up) * toLockOn;
@@ -136,9 +157,9 @@ public class CameraLockon : MonoBehaviour
 
         if (Application.isPlaying)
         {
-            if (m_origin != null && m_lockOnTarget == null)
+            if (m_origin != null && m_lockOnTarget == null && m_camControl != null)
             {
-                transform.position = m_origin.position;
+                m_camControl.cinemachineCameraTarget.transform.position = m_origin.position;
             }
         }
     }
@@ -148,13 +169,13 @@ public class CameraLockon : MonoBehaviour
         if(isLockedOn)
         {
             Gizmos.color = Color.red;
-            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.matrix = m_camControl.cinemachineCameraTarget.transform.localToWorldMatrix;
             Gizmos.DrawLine(Vector3.zero, Vector3.forward * m_currentCamDistance);
 
             Gizmos.matrix = Matrix4x4.identity;
             Gizmos.DrawSphere(lockOnTarget.GetTargetPosition(), 0.2f);
 
-            Gizmos.DrawSphere(transform.position, 0.2f);
+            Gizmos.DrawSphere(m_camControl.cinemachineCameraTarget.transform.position, 0.2f);
         }
     }
 }

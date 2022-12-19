@@ -4,10 +4,42 @@ using UnityEngine;
 
 public class PlayerInputReceiver : InputReceiver
 {
-    [SerializeField] Transform m_viewInputTransform = null;
+    [SerializeField] Camera m_playerViewCamera = null;
+    Transform m_viewInputTransform = null;
     [SerializeField] float m_minimumMovementMagnitude = 0.01f;
 
-    public Transform viewInputTransform { get { return m_viewInputTransform; } set { m_viewInputTransform = value; } }
+    public Camera playerViewCamera 
+    { 
+        get 
+        { 
+            return m_playerViewCamera; 
+        } 
+        set 
+        { 
+            m_playerViewCamera = value; 
+            if(m_playerViewCamera != null)
+            {
+                m_viewInputTransform = m_playerViewCamera.transform;
+            }
+            else
+            {
+                m_viewInputTransform = null;
+            }
+        } 
+    }
+    public Transform viewInputTransform { get { return m_viewInputTransform; } }
+
+    private void Awake()
+    {
+        if (m_playerViewCamera != null)
+        {
+            m_viewInputTransform = m_playerViewCamera.transform;
+        }
+        else
+        {
+            m_viewInputTransform = null;
+        }
+    }
 
     #region ReadInputs
     public override Vector3 GetMovement()

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : PlayerBehaviour
 {
-    public PlayerInputReceiver inputReceiver = null;
+    PlayerInputReceiver inputReceiver { get { return playerRef.input; } }
 
     [SerializeField] CharacterController m_characterControl = null;
 
@@ -76,8 +76,10 @@ public class PlayerController : MonoBehaviour
 
     public bool isGrounded { get { return m_groundedStateMachine.GetCurrentState() != GroundedStateEnum.airborne; } }
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         InitialiseStateMachine();
 
         if(CheckForGroundUpdate())

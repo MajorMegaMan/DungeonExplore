@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
-public class PlayerAnimate : MonoBehaviour
+public class PlayerAnimate : PlayerBehaviour
 {
     Animator m_anim;
-    [SerializeField] PlayerController m_playerController;
     [SerializeField] AnimationStateID m_movementParameter;
     [SerializeField] AnimationStateID m_horizontalMovementParameter;
 
@@ -28,11 +27,15 @@ public class PlayerAnimate : MonoBehaviour
     float m_smoothHoriSpeedVel = 0.0f;
     [SerializeField] float m_smoothSpeedTime = 0.02f;
 
-    [Header("Lock on Var")]
-    [SerializeField] CameraLockon m_camLockOn;
+    //[SerializeField] CameraLockon m_camLockOn;
 
-    private void Awake()
+    CameraLockon camLockOn { get { return playerRef.lockOn; } }
+    PlayerController playerController { get { return playerRef.controller; } }
+
+    protected override void Awake()
     {
+        base.Awake();
+
         m_anim = GetComponent<Animator>();
         m_movementParameter.Initialise();
         m_horizontalMovementParameter.Initialise();
@@ -52,19 +55,19 @@ public class PlayerAnimate : MonoBehaviour
 
     private void LateUpdate()
     {
-        float normalisedSpeed = m_speedCurve.Evaluate(m_playerController.currentSpeed / m_playerController.speed);
+        float normalisedSpeed = m_speedCurve.Evaluate(playerController.currentSpeed / playerController.speed);
 
-        if(m_camLockOn.isLockedOn)
+        if(camLockOn.isLockedOn)
         {
-            Vector3 toLockOn = m_camLockOn.lockOnTarget.GetTargetPosition() - transform.position;
+            Vector3 toLockOn = camLockOn.lockOnTarget.GetTargetPosition() - transform.position;
             toLockOn.y = 0;
             toLockOn = toLockOn.normalized;
-            float headingDot = Vector3.Dot(toLockOn, m_playerController.heading);
+            float headingDot = Vector3.Dot(toLockOn, playerController.heading);
             float forwardSpeed = normalisedSpeed * headingDot;
             Quaternion additionalRot = Quaternion.Slerp(m_standRot, m_runRot, forwardSpeed);
             //toLockOn = additionalRot * toLockOn;
 
-            Vector3 playerRight = -Vector3.Cross(Vector3.up, m_playerController.heading);
+            Vector3 playerRight = -Vector3.Cross(Vector3.up, playerController.heading);
             float rightDot = Vector3.Dot(toLockOn, playerRight);
 
             m_smoothSpeed = Mathf.SmoothDamp(m_smoothSpeed, forwardSpeed, ref m_smoothSpeedVel, m_smoothSpeedTime);
@@ -101,7 +104,7 @@ public class PlayerAnimate : MonoBehaviour
 
     void SmoothHeading(float normalisedSpeed)
     {
-        SmoothHeading(normalisedSpeed, m_playerController.heading);
+        SmoothHeading(normalisedSpeed, playerController.heading);
     }
 
     void SmoothHeading(Vector3 destinationDirection, Quaternion additionalRot)

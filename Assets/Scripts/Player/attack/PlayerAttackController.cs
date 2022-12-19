@@ -2,9 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerAttackController : MonoBehaviour
+public class PlayerAttackController : PlayerBehaviour
 {
-    [SerializeField] PlayerInputReceiver m_inputReceiver;
     [SerializeField] BBB.SimpleTimer m_attackTimer = new BBB.SimpleTimer(1.0f);
 
     [SerializeField] PlayerController m_playerController;
@@ -16,6 +15,8 @@ public class PlayerAttackController : MonoBehaviour
 
     [SerializeField] Animator debugAnim;
     [SerializeField] PlayerAttackAction debug_attackAction;
+
+    PlayerInputReceiver inputReceiver { get { return playerRef.input; } }
 
     // Start is called before the first frame update
     void Start()
@@ -33,7 +34,7 @@ public class PlayerAttackController : MonoBehaviour
 
     void TryBeginAttack()
     {
-        if (m_inputReceiver.GetAttack())
+        if (inputReceiver.GetAttack())
         {
             // Perform attack
             if (m_isAttacking)

@@ -7,12 +7,6 @@ public class LockOnReticle : MonoBehaviour
     [SerializeField] Camera m_camera;
     [SerializeField] Transform m_targetFollow;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void LateUpdate()
     {
@@ -26,5 +20,10 @@ public class LockOnReticle : MonoBehaviour
     public void SetTargetFollow(Transform target)
     {
         m_targetFollow = target;
+    }
+
+    public void SetCamera(Camera camera)
+    {
+        m_camera = camera;
     }
 }
