@@ -113,6 +113,25 @@ namespace BBB
             return _instance;
         }
 
+        protected static void SetInstance(T instance)
+        {
+            _instance = instance;
+            if(_instance != null)
+            {
+                _instanceGetter = ReturnSingleton;
+            }
+            else
+            {
+                _instanceGetter = CreateSingleton;
+            }
+        }
+
+        protected static void RemoveInstance()
+        {
+            _instance = null;
+            _instanceGetter = CreateSingleton;
+        }
+
         protected virtual void OnCreateInstance()
         {
 
@@ -123,8 +142,7 @@ namespace BBB
         {
             if (_instance == this)
             {
-                _instance = null;
-                _instanceGetter = CreateSingleton;
+                RemoveInstance();
             }
         }
     }

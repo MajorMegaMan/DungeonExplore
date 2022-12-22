@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerCameraController : MonoBehaviour
+public class PlayerCameraController : PlayerBehaviour
 {
-    [SerializeField] PlayerInputReceiver m_inputReceiver;
-
     [Header("Sensitivity")]
     [SerializeField] float m_mouseSensitivity = 1.0f;
     [SerializeField, Range(-1, 1)] int m_mouseInvertX = 1;
@@ -42,6 +40,8 @@ public class PlayerCameraController : MonoBehaviour
     Vector2 m_smoothVelocity = Vector2.zero;
 
 
+    public PlayerInputReceiver inputReceiver { get { return playerRef.input; } }
+
     public GameObject cinemachineCameraTarget { get { return m_cinemachineCameraTarget; } set { m_cinemachineCameraTarget = value; } }
     public float topClamp { get { return m_topClamp; } set { m_topClamp = value; } }
     public float bottomClamp { get { return m_bottomClamp; } set { m_bottomClamp = value; } }
@@ -67,8 +67,8 @@ public class PlayerCameraController : MonoBehaviour
         // if there is an input and camera position is not fixed
         if(!m_lockCameraPosition)
         {
-            ApplyLookSensitivity(m_inputReceiver.GetMouseLook(), m_mouseSensitivity, m_mouseInvertX, m_mouseInvertY);
-            ApplyLookSensitivity(m_inputReceiver.GetGamepadLook(), m_gamepadSensitivity, m_gamepadInvertX, m_gamepadInvertY);
+            ApplyLookSensitivity(inputReceiver.GetMouseLook(), m_mouseSensitivity, m_mouseInvertX, m_mouseInvertY);
+            ApplyLookSensitivity(inputReceiver.GetGamepadLook(), m_gamepadSensitivity, m_gamepadInvertX, m_gamepadInvertY);
         }
 
         // clamp our rotations so our values are limited 360 degrees
