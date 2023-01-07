@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerCameraController))]
-public class CameraLockon : MonoBehaviour
+public class CameraLockon : MonoBehaviour, ILockOnTargeter
 {
     [SerializeField] LockOnReticle m_lockOnReticle;
 
@@ -25,14 +25,16 @@ public class CameraLockon : MonoBehaviour
 
     float m_currentCamDistance = 0.0f;
 
-    public ILockOnTarget lockOnTarget { get { return m_lockOnTarget; } }
-    public bool isLockedOn { get { return m_lockOnTarget != null; } }
+    ILockOnTargeter m_selfTargeter;
+    public ILockOnTarget lockOnTarget { get { return m_lockOnTarget; } set { SetLockOnTarget(value); } }
+    public bool isLockedOn { get { return m_selfTargeter.IsLockedOn(); } }
 
     PlayerInputReceiver inputReceiver { get { return m_camControl.inputReceiver; } }
 
     private void Awake()
     {
         m_camControl = GetComponent<PlayerCameraController>();
+        m_selfTargeter = this;
     }
 
     // Start is called before the first frame update
@@ -166,7 +168,8 @@ public class CameraLockon : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if(isLockedOn)
+        var self = this as ILockOnTargeter;
+        if(self.IsLockedOn())
         {
             Gizmos.color = Color.red;
             Gizmos.matrix = m_camControl.cinemachineCameraTarget.transform.localToWorldMatrix;

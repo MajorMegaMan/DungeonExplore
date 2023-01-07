@@ -13,7 +13,6 @@ public class LockOnManager : BBB.VariableMonoSingletonBase<LockOnManager>
 
     void Awake()
     {
-        Debug.Log("Awaked");
         if(instance != this)
         {
             Destroy(this);

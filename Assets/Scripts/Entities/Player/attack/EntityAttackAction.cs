@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class PlayerAttackAction
+public class EntityAttackAction
 {
     [SerializeField] ScriptableAttackAction m_scriptableAttackAction;
     int m_animationHashID = 0;
@@ -34,13 +34,13 @@ public class PlayerAttackAction
 
     public StraightAttack BeginStraghtAttack(Vector3 direction)
     {
-        m_straightMoveAction.SetDirection(direction);
+        //m_straightMoveAction.SetDirection(direction);
         return m_straightMoveAction;
     }
 
     public LockOnAttack BeginLockOnAttack(ILockOnTarget lockOnTarget)
     {
-        m_lockOnMoveAction.SetTarget(lockOnTarget);
+        //m_lockOnMoveAction.SetTarget(lockOnTarget);
         return m_lockOnMoveAction;
     }
 
@@ -50,7 +50,7 @@ public class PlayerAttackAction
     }
 }
 
-public class StraightAttack : IPlayerMoveAction
+public class StraightAttack : IEntityMoveAction
 {
     ScriptableAttackAction m_scriptableAttackAction;
 
@@ -82,13 +82,18 @@ public class StraightAttack : IPlayerMoveAction
         return m_origin.position + m_direction;
     }
 
-    public void PerformAction(PlayerController player, float t)
+    public void BeginAction(IActionable actionableEntity, ILockOnTarget target)
     {
-        player.UpdateMovement(Vector3.ClampMagnitude(m_direction, m_scriptableAttackAction.velocityCurve.Evaluate(t)));
+        SetDirection(actionableEntity.GetActionHeading());
+    }
+
+    public void PerformAction(IActionable actionableEntity, float t)
+    {
+        actionableEntity.ForceMovement(Vector3.ClampMagnitude(m_direction, m_scriptableAttackAction.velocityCurve.Evaluate(t)));
     }
 }
 
-public class LockOnAttack : IPlayerMoveAction
+public class LockOnAttack : IEntityMoveAction
 {
     ScriptableAttackAction m_scriptableAttackAction;
 
@@ -122,10 +127,15 @@ public class LockOnAttack : IPlayerMoveAction
         return m_target.GetTargetPosition() - toTarget.normalized * m_target.GetTargetRadius();
     }
 
-    public void PerformAction(PlayerController player, float t)
+    public void BeginAction(IActionable actionableEntity, ILockOnTarget target)
     {
-        Vector3 toDestination = GetDestination() - player.transform.position;
-        player.UpdateMovement(Vector3.ClampMagnitude(toDestination, m_scriptableAttackAction.velocityCurve.Evaluate(t)));
+        SetTarget(target);
+    }
+
+    public void PerformAction(IActionable actionableEntity, float t)
+    {
+        Vector3 toDestination = GetDestination() - actionableEntity.position;
+        actionableEntity.ForceMovement(Vector3.ClampMagnitude(toDestination, m_scriptableAttackAction.velocityCurve.Evaluate(t)));
     }
 }
 

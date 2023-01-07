@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerController : PlayerBehaviour
+public class PlayerController : PlayerBehaviour, IActionable, IEntity
 {
     PlayerInputReceiver inputReceiver { get { return playerRef.input; } }
 
@@ -60,10 +60,12 @@ public class PlayerController : PlayerBehaviour
     const float GROUND_ERROR = 0.1f;
 
     // Action variables
-    BBB.SimpleTimer m_actionTimer;
-    IPlayerMoveAction m_currentMoveAction;
+    [Header("Attack Controller")]
+    [SerializeField] ActionController m_attackController;
+    [SerializeField] EntityAttackAction m_entityAttack;
 
     // Getters
+    public Vector3 position { get { return transform.position; } }
     public float speed { get { return m_speed; } }
     public Vector3 velocity { get { return m_velocity; } }
     public float currentSpeed { get { return m_currentSpeed; } }
@@ -82,18 +84,10 @@ public class PlayerController : PlayerBehaviour
 
         InitialiseStateMachine();
 
-        if(CheckForGroundUpdate())
-        {
-            m_groundedStateMachine.InitialiseState(GroundedStateEnum.grounded);
-        }
-        else
-        {
-            m_groundedStateMachine.InitialiseState(GroundedStateEnum.airborne);
-        }
-
         m_jumpSquatTimer.targetReachedEvent.AddListener(JumpRelease);
 
-        m_actionTimer = new BBB.SimpleTimer();
+        m_attackController.Init(this);
+        m_entityAttack.Initialise(transform);
     }
 
     // Start is called before the first frame update
@@ -113,6 +107,11 @@ public class PlayerController : PlayerBehaviour
             {
                 JumpBegin();
             }
+        }
+
+        if(inputReceiver.GetAttack())
+        {
+            TryBeginAttack();
         }
 
         m_groundedStateMachine.Invoke();
@@ -219,13 +218,49 @@ public class PlayerController : PlayerBehaviour
         m_airjumpEvent.Invoke();
     }
 
-    public void BeginAction(IPlayerMoveAction playerAction)
+    void TryBeginAttack()
     {
-        m_actionTimer.targetTime = playerAction.GetActionTime();
+        IEntityMoveAction attackAction;
+        if (playerRef.lockOn.isLockedOn)
+        {
+            attackAction = m_entityAttack.BeginLockOnAttack(playerRef.lockOn.lockOnTarget);
+        }
+        else
+        {
+            attackAction = m_entityAttack.BeginStraghtAttack(playerRef.controller.heading);
+        }
+        if (m_attackController.TryBeginAction(attackAction, playerRef.lockOn.lockOnTarget))
+        {
+            playerRef.animate.anim.CrossFade(m_entityAttack.GetAnimationHashID(), m_entityAttack.animationTransitionTime, 0, 0.0f);
+        }
+    }
 
-        m_currentMoveAction = playerAction;
+    #region IActionable
+    public void BeginAction(IEntityMoveAction playerAction)
+    {
         m_groundedStateMachine.ChangeToState(GroundedStateEnum.actioned);
     }
+
+    public void EndAction()
+    {
+        SmartSetControllableState();
+    }
+
+    public Vector3 GetActionHeading()
+    {
+        return m_heading;
+    }
+
+    public Transform GetActionTransform()
+    {
+        return transform;
+    }
+
+    void IActionable.ForceMovement(Vector3 moveDir)
+    {
+        UpdateMovement(moveDir);
+    }
+    #endregion // ! IActionable
 
     void SmartSetControllableState()
     {
@@ -259,6 +294,15 @@ public class PlayerController : PlayerBehaviour
         groundedStates[(int)GroundedStateEnum.actioned] = new ActionState();
 
         m_groundedStateMachine = new PackagedStateMachine<PlayerController>(this, groundedStates);
+
+        if (CheckForGroundUpdate())
+        {
+            m_groundedStateMachine.InitialiseState(GroundedStateEnum.grounded);
+        }
+        else
+        {
+            m_groundedStateMachine.InitialiseState(GroundedStateEnum.airborne);
+        }
     }
 
     class GroundedState : IState<PlayerController>
@@ -409,7 +453,7 @@ public class PlayerController : PlayerBehaviour
     {
         void IState<PlayerController>.Enter(PlayerController owner)
         {
-            owner.m_actionTimer.Reset();
+            //owner.m_actionTimer.Reset();
         }
 
         void IState<PlayerController>.Exit(PlayerController owner)
@@ -419,14 +463,7 @@ public class PlayerController : PlayerBehaviour
 
         void IState<PlayerController>.Invoke(PlayerController owner)
         {
-            owner.m_actionTimer.Tick(Time.deltaTime);
-            owner.m_currentMoveAction.PerformAction(owner, owner.m_actionTimer.normalisedTime);
-
-            if(owner.m_actionTimer.IsTargetReached())
-            {
-                // action is completed
-                owner.SmartSetControllableState();
-            }
+            owner.m_attackController.PerformAction(Time.deltaTime);
         }
     }
     #endregion // ! GroundedStates

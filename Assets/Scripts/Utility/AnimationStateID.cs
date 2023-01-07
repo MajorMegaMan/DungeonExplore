@@ -3,11 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-class AnimationStateID
+public class AnimationStateID
 {
     [SerializeField] string m_name;
 
     [System.NonSerialized] int m_id;
+
+    public AnimationStateID() { }
+
+    public AnimationStateID(string name)
+    {
+        m_name = name;
+        Initialise();
+    }
+
+    public AnimationStateID(AnimationStateID copy)
+    {
+        Copy(copy);
+    }
 
     public void Initialise()
     {
@@ -17,5 +30,11 @@ class AnimationStateID
     public int GetID()
     {
         return m_id;
+    }
+
+    public void Copy(AnimationStateID other)
+    {
+        m_name = other.m_name;
+        m_id = other.m_id;
     }
 }

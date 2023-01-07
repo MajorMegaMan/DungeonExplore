@@ -324,7 +324,6 @@ GameObject:
   - component: {fileID: 8729045210709861428}
   - component: {fileID: 8729045210709861425}
   - component: {fileID: 8729045210709861424}
-  - component: {fileID: 8729045210709861431}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -363,11 +362,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_controller: {fileID: 8729045210709861425}
-  m_animate: {fileID: 8729045209768575398}
+  m_animate: {fileID: 7149486726220514126}
   m_input: {fileID: 8729045210217658313}
   m_cameraController: {fileID: 8729045210763950779}
   m_lockOn: {fileID: 8729045210763950778}
-  m_attackController: {fileID: 8729045210709861431}
 --- !u!114 &8729045210709861425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -411,6 +409,15 @@ MonoBehaviour:
   m_fallEvent:
     m_PersistentCalls:
       m_Calls: []
+  m_attackController:
+    m_actionTimer:
+      targetTime: 1
+    m_beginActionEvent:
+      m_PersistentCalls:
+        m_Calls: []
+  m_entityAttack:
+    m_scriptableAttackAction: {fileID: 11400000, guid: 01a775e74e2f85e479ae8ea16c1c37da,
+      type: 2}
 --- !u!143 &8729045210709861424
 CharacterController:
   m_ObjectHideFlags: 0
@@ -429,27 +436,6 @@ CharacterController:
   m_SkinWidth: 0.01
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1, z: 0}
---- !u!114 &8729045210709861431
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8729045210709861427}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d0cd5dd0b2711e4eb65ebce2fa5d56b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_playerRef: {fileID: 8729045210709861428}
-  m_attackTimer:
-    targetTime: 1
-  m_playerController: {fileID: 8729045210709861425}
-  m_lockOn: {fileID: 8729045210763950778}
-  debugAnim: {fileID: 2902950353673944114}
-  debug_attackAction:
-    m_scriptableAttackAction: {fileID: 11400000, guid: 01a775e74e2f85e479ae8ea16c1c37da,
-      type: 2}
 --- !u!1 &8729045210763950756
 GameObject:
   m_ObjectHideFlags: 0
@@ -734,12 +720,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 112fd0b0138917a46b71b6005a49f731, type: 3}
---- !u!95 &2902950353673944114 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 112fd0b0138917a46b71b6005a49f731,
-    type: 3}
-  m_PrefabInstance: {fileID: 8729045209768575395}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7491281697602421706 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2221872609835778665, guid: 112fd0b0138917a46b71b6005a49f731,
@@ -752,7 +732,7 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 8729045209768575395}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8729045209768575398
+--- !u!114 &7149486726220514126
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -761,61 +741,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8494533881991134450}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 22147f4f97acc4448a299547dfcf432e, type: 3}
+  m_Script: {fileID: 11500000, guid: 1dd2fd7cbdeb4884f8312f4d3319ef70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_playerRef: {fileID: 8729045210709861428}
-  m_movementParameter:
-    m_name: MoveSpeed
-  m_horizontalMovementParameter:
-    m_name: HorizontalMoveSpeed
-  m_speedCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0.5153739
-      outSlope: 0.5153739
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.091836736
-    - serializedVersion: 3
-      time: 0.012816725
-      value: 0.034794837
-      inSlope: 5.6436667
-      outSlope: 5.6436667
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.81919867
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.49830508
-      value: 0.8113208
-      inSlope: 0.5776077
-      outSlope: 0.5776077
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.08983052
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_headingSpeed: 250
-  m_standEuler: {x: 0, y: 0, z: 0}
-  m_walkEuler: {x: 0, y: 0, z: 0}
-  m_runEuler: {x: 0, y: 40, z: 0}
-  m_smoothSpeedTime: 0.2
+  m_animationData: {fileID: 11400000, guid: d8471ea0009ac6843af0877bb8bbb06d, type: 2}
 --- !u!4 &9126954916553270856 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 112fd0b0138917a46b71b6005a49f731,

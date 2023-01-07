@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85076df141f39884683c827a420e31ff, type: 3}
+  m_Name: Basic Entity Animation Data
+  m_EditorClassIdentifier: 
+  m_movementParameter:
+    m_name: MoveSpeed
+  m_horizontalMovementParameter:
+    m_name: HorizontalMoveSpeed
+  m_speedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.5153739
+      outSlope: 0.5153739
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.091836736
+    - serializedVersion: 3
+      time: 0.012816725
+      value: 0.034794837
+      inSlope: 5.6436667
+      outSlope: 5.6436667
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.81919867
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.49830508
+      value: 0.8113208
+      inSlope: 0.5776077
+      outSlope: 0.5776077
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.08983052
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_headingSpeed: 250
+  m_standEuler: {x: 0, y: 0, z: 0}
+  m_walkEuler: {x: 0, y: 0, z: 0}
+  m_runEuler: {x: 0, y: 40, z: 0}
+  m_smoothSpeedTime: 0.2

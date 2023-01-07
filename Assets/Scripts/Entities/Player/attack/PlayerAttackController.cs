@@ -6,7 +6,7 @@ public class PlayerAttackController : PlayerBehaviour
 {
     [SerializeField] BBB.SimpleTimer m_attackTimer = new BBB.SimpleTimer(1.0f);
 
-    [SerializeField] PlayerController m_playerController;
+    //[SerializeField] PlayerController m_playerController;
     [SerializeField] CameraLockon m_lockOn;
 
     delegate void AttackUpdate();
@@ -14,14 +14,14 @@ public class PlayerAttackController : PlayerBehaviour
     bool m_isAttacking = false;
 
     [SerializeField] Animator debugAnim;
-    [SerializeField] PlayerAttackAction debug_attackAction;
+    [SerializeField] EntityAttackAction debug_attackAction;
 
     PlayerInputReceiver inputReceiver { get { return playerRef.input; } }
 
     // Start is called before the first frame update
     void Start()
     {
-        debug_attackAction.Initialise(m_playerController.transform);
+        debug_attackAction.Initialise(playerRef.controller.transform);
 
         m_attackUpdate = TryBeginAttack;
     }
@@ -47,16 +47,17 @@ public class PlayerAttackController : PlayerBehaviour
             m_attackTimer.targetTime = debug_attackAction.readyTime;
             m_attackTimer.Reset();
 
-            IPlayerMoveAction attackAction;
+            IEntityMoveAction attackAction;
             if (m_lockOn.isLockedOn)
             {
                 attackAction = debug_attackAction.BeginLockOnAttack(m_lockOn.lockOnTarget);
             }
             else
             {
-                attackAction = debug_attackAction.BeginStraghtAttack(m_playerController.heading * m_attackTimer.targetTime * 5);
+                attackAction = debug_attackAction.BeginStraghtAttack(playerRef.controller.heading * m_attackTimer.targetTime * 5);
             }
-            m_playerController.BeginAction(attackAction);
+            attackAction.BeginAction(playerRef.controller, m_lockOn.lockOnTarget);
+            playerRef.controller.BeginAction(attackAction);
 
             debugAnim.CrossFade(debug_attackAction.GetAnimationHashID(), debug_attackAction.animationTransitionTime, 0, 0.0f);
         }
