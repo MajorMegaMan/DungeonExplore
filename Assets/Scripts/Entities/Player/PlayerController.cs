@@ -64,6 +64,10 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
     [SerializeField] ActionController m_attackController;
     [SerializeField] EntityAttackAction m_entityAttack;
 
+    [Header("Entity")]
+    [SerializeField] float m_entityRadius = 1.0f;
+    [SerializeField] int m_team = 0;
+
     // Getters
     public Vector3 position { get { return transform.position; } }
     public float speed { get { return m_speed; } }
@@ -234,6 +238,29 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
             playerRef.animate.anim.CrossFade(m_entityAttack.GetAnimationHashID(), m_entityAttack.animationTransitionTime, 0, 0.0f);
         }
     }
+
+    #region IEntity
+    static Bounds _zeroBounds = new Bounds();
+    public Bounds GetAABB()
+    {
+        return _zeroBounds;
+    }
+
+    public Transform GetCameraLookTransform()
+    {
+        return null;
+    }
+
+    public float GetTargetRadius()
+    {
+        return m_entityRadius;
+    }
+
+    public int GetTeam()
+    {
+        return m_team;
+    }
+    #endregion // ! IEntity
 
     #region IActionable
     public void BeginAction(IEntityMoveAction playerAction)

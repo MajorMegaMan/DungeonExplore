@@ -9,6 +9,7 @@ public class EntityAttackAction
     int m_animationHashID = 0;
 
     public float readyTime { get { return m_scriptableAttackAction.readyTime; } }
+    public float attackDistance { get { return m_scriptableAttackAction.attackDistance; } }
     public float animationTransitionTime { get { return m_scriptableAttackAction.animationTransitionTime; } }
 
     StraightAttack m_straightMoveAction;
@@ -38,7 +39,7 @@ public class EntityAttackAction
         return m_straightMoveAction;
     }
 
-    public LockOnAttack BeginLockOnAttack(ILockOnTarget lockOnTarget)
+    public LockOnAttack BeginLockOnAttack(IEntity lockOnTarget)
     {
         //m_lockOnMoveAction.SetTarget(lockOnTarget);
         return m_lockOnMoveAction;
@@ -82,7 +83,7 @@ public class StraightAttack : IEntityMoveAction
         return m_origin.position + m_direction;
     }
 
-    public void BeginAction(IActionable actionableEntity, ILockOnTarget target)
+    public void BeginAction(IActionable actionableEntity, IEntity target)
     {
         SetDirection(actionableEntity.GetActionHeading());
     }
@@ -98,14 +99,14 @@ public class LockOnAttack : IEntityMoveAction
     ScriptableAttackAction m_scriptableAttackAction;
 
     Transform m_origin;
-    ILockOnTarget m_target;
+    IEntity m_target;
 
     public LockOnAttack(Transform origin)
     {
         this.m_origin = origin;
     }
 
-    public void SetTarget(ILockOnTarget target)
+    public void SetTarget(IEntity target)
     {
         this.m_target = target;
     }
@@ -122,12 +123,13 @@ public class LockOnAttack : IEntityMoveAction
 
     public Vector3 GetDestination()
     {
-        Vector3 toTarget = m_target.GetTargetPosition() - m_origin.position;
+        Vector3 pos = m_target.position;
+        Vector3 toTarget = pos - m_origin.position;
 
-        return m_target.GetTargetPosition() - toTarget.normalized * m_target.GetTargetRadius();
+        return pos - toTarget.normalized * m_target.GetTargetRadius();
     }
 
-    public void BeginAction(IActionable actionableEntity, ILockOnTarget target)
+    public void BeginAction(IActionable actionableEntity, IEntity target)
     {
         SetTarget(target);
     }

@@ -9,7 +9,7 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
 
     [SerializeField] Transform m_origin;
     [SerializeField] GameObject m_lockOnObject;
-    ILockOnTarget m_lockOnTarget;
+    IEntity m_lockOnTarget;
 
     [SerializeField] float m_lerpAmount = 0.5f;
     [SerializeField] float m_distanceDegradeRatio = 1.0f;
@@ -26,7 +26,7 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
     float m_currentCamDistance = 0.0f;
 
     ILockOnTargeter m_selfTargeter;
-    public ILockOnTarget lockOnTarget { get { return m_lockOnTarget; } set { SetLockOnTarget(value); } }
+    public IEntity lockOnTarget { get { return m_lockOnTarget; } set { SetLockOnTarget(value); } }
     public bool isLockedOn { get { return m_selfTargeter.IsLockedOn(); } }
 
     PlayerInputReceiver inputReceiver { get { return m_camControl.inputReceiver; } }
@@ -83,7 +83,7 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
             return;
         }
 
-        var lockOnTarget = m_lockOnObject.GetComponent<ILockOnTarget>();
+        var lockOnTarget = m_lockOnObject.GetComponent<IEntity>();
         if (lockOnTarget != null)
         {
             m_lockOnTarget = lockOnTarget;
@@ -95,7 +95,7 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
         }
     }
 
-    public void SetLockOnTarget(ILockOnTarget lockOnTarget)
+    public void SetLockOnTarget(IEntity lockOnTarget)
     {
         m_lockOnTarget = lockOnTarget;
         if (m_lockOnTarget == null)
@@ -176,20 +176,20 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
             Gizmos.DrawLine(Vector3.zero, Vector3.forward * m_currentCamDistance);
 
             Gizmos.matrix = Matrix4x4.identity;
-            Gizmos.DrawSphere(lockOnTarget.GetTargetPosition(), 0.2f);
+            Gizmos.DrawSphere(lockOnTarget.position, 0.2f);
 
             Gizmos.DrawSphere(m_camControl.cinemachineCameraTarget.transform.position, 0.2f);
         }
     }
 }
 
-public interface ILockOnTarget
-{
-    Vector3 GetTargetPosition();
-
-    Bounds GetAABB();
-
-    Transform GetCameraLookTransform();
-
-    float GetTargetRadius();
-}
+//public interface ILockOnTarget
+//{
+//    Vector3 GetTargetPosition();
+//
+//    Bounds GetAABB();
+//
+//    Transform GetCameraLookTransform();
+//
+//    float GetTargetRadius();
+//}

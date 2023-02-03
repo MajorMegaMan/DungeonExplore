@@ -32,7 +32,7 @@ public class ActionController
         m_actionableEntity = entity;
     }
 
-    public bool TryBeginAction(IEntityMoveAction moveAction, ILockOnTarget lockOnTarget)
+    public bool TryBeginAction(IEntityMoveAction moveAction, IEntity lockOnTarget)
     {
         // Perform attack
         if (isActioning)
@@ -42,8 +42,8 @@ public class ActionController
         m_currentAction = moveAction;
         m_performUpdate = InternalPerformAction;
 
-        moveAction.BeginAction(m_actionableEntity, lockOnTarget);
         m_actionableEntity.BeginAction(moveAction);
+        moveAction.BeginAction(m_actionableEntity, lockOnTarget);
 
         m_beginActionEvent.Invoke();
 

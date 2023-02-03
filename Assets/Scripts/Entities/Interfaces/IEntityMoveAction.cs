@@ -7,6 +7,6 @@ public interface IEntityMoveAction
     float GetActionTime();
     Vector3 GetDestination();
 
-    void BeginAction(IActionable actionableEntity, ILockOnTarget target);
+    void BeginAction(IActionable actionableEntity, IEntity target);
     void PerformAction(IActionable actionableEntity, float t);
 }

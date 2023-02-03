@@ -53,7 +53,7 @@ public class EntityAnimate : MonoBehaviour
 
         if (m_lockOnTargeter.IsLockedOn())
         {
-            Vector3 toLockOn = m_lockOnTargeter.lockOnTarget.GetTargetPosition() - transform.position;
+            Vector3 toLockOn = m_lockOnTargeter.lockOnTarget.position - transform.position;
             toLockOn.y = 0;
             toLockOn = toLockOn.normalized;
             float headingDot = Vector3.Dot(toLockOn, m_entity.heading);

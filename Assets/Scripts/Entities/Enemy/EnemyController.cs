@@ -4,28 +4,51 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class EnemyController : MonoBehaviour, IActionable, IEntity
+public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTargeter
 {
     NavMeshAgent m_navAgent;
 
     PackagedStateMachine<EnemyController> m_movementStateMachine;
 
-    IAttackTarget m_currentAttackTarget = null;
+    IEntity m_currentAttackTarget = null;
 
     [SerializeField] ActionController m_attackController;
-
-    [SerializeField] SimpleAttackTarget debug_attackTarget = null;
+    [SerializeField] EntityAttackAction m_entityAttack;
 
     [SerializeField] EntityAnimate m_anim;
+
+    [SerializeField] GameObject debug_attackTargetObject = null;
+    IEntity debug_attackTarget = null;
+
+    //[SerializeField] SimpleLockOnTarget m_targetComponent;
+
+    MovementStateEnum m_preActionState = 0;
+
+    [Header("Entity")]
+    [SerializeField] Transform m_lockOnTransform;
+    [SerializeField] Renderer m_renderer;
+    [SerializeField] float m_entityRadius = 1.0f;
+    [SerializeField] int m_team = 0;
 
     public Vector3 position { get { return transform.position; } }
     public float speed { get { return m_navAgent.speed; } }
     public Vector3 velocity { get { return m_navAgent.velocity; } }
     public float currentSpeed { get { return m_navAgent.velocity.magnitude; } }
-    public Vector3 heading { get { return m_navAgent.velocity.normalized; } }
+
+    Vector3 m_usableHeading = Vector3.zero;
+    public Vector3 heading { get { return m_usableHeading; } }
+
+
+    ILockOnTargeter m_selfTargeter;
+    IEntity m_lockOnTarget;
+    IEntity ILockOnTargeter.lockOnTarget { get { return m_lockOnTarget; } set { SetLockOnTarget(value); } }
 
     private void Awake()
     {
+        LockOnManager.RegisterLockOnTarget(this);
+
+        m_selfTargeter = this;
+
         m_anim.SetEntity(this);
 
         m_navAgent = GetComponent<NavMeshAgent>();
@@ -33,24 +56,50 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity
         InitialiseStateMachine();
 
         m_attackController.Init(this);
+        m_entityAttack.Initialise(transform);
     }
 
     // Start is called before the first frame update
     void Start()
     {
+        debug_attackTarget = debug_attackTargetObject.GetComponent<IEntity>();
         if (debug_attackTarget != null)
         {
-            FollowTarget(debug_attackTarget);
+            AttackFollowTarget(debug_attackTarget);
         }
+
+        m_navAgent.updateRotation = false;
+    }
+
+    private void OnDestroy()
+    {
+        LockOnManager.DeregisterLockOnTarget(this);
     }
 
     // Update is called once per frame
     void Update()
     {
         m_movementStateMachine.Invoke();
+        Debug.DrawRay(position, velocity, Color.green);
     }
 
-    void FollowTarget(IAttackTarget attackTarget)
+    // Returns the distance remaining to the target
+    float UpdateFollowMovement(float distance)
+    {
+        Vector3 target = m_currentAttackTarget.position;
+        Vector3 toTarget = target - transform.position;
+        float remainDistance = toTarget.magnitude;
+
+        Vector3 position = target;
+        if(distance > 0.0001f)
+        {
+            position = target - (toTarget / remainDistance) * (distance);
+        }
+        m_navAgent.SetDestination(position);
+        return remainDistance;
+    }
+
+    void FollowTarget(IEntity attackTarget)
     {
         if(attackTarget != null)
         {
@@ -65,27 +114,63 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity
         }
     }
 
-    #region IAcitonable
-    public void BeginAction(IEntityMoveAction playerAction)
+    void AttackFollowTarget(IEntity attackTarget)
     {
-        playerAction.GetActionTime();
-    }
-
-    public void EndAction()
-    {
-        if (debug_attackTarget != null)
+        if (attackTarget != null)
         {
-            FollowTarget(debug_attackTarget);
+            m_currentAttackTarget = attackTarget;
+            //m_selfTargeter.lockOnTarget = attackTarget.
+            m_movementStateMachine.ChangeToState(MovementStateEnum.attackFollow);
         }
         else
         {
+            // Change to an empty state for now, but the agent should find the behaviour it would like to be doing.
+            m_currentAttackTarget = null;
             m_movementStateMachine.ChangeToState(MovementStateEnum.empty);
         }
     }
 
+    void TryBeginAttack(IEntity attackTarget, bool lockOnAttack)
+    {
+        IEntityMoveAction attackAction;
+        if (lockOnAttack)
+        {
+            attackAction = m_entityAttack.BeginLockOnAttack(attackTarget);
+        }
+        else
+        {
+            Vector3 toTarget = attackTarget.position - position;
+            toTarget = toTarget.normalized;
+            attackAction = m_entityAttack.BeginStraghtAttack(toTarget);
+            //attackAction = m_entityAttack.BeginStraghtAttack(heading);
+        }
+        if (m_attackController.TryBeginAction(attackAction, attackTarget))
+        {
+            m_anim.anim.CrossFade(m_entityAttack.GetAnimationHashID(), m_entityAttack.animationTransitionTime, 0, 0.0f);
+        }
+    }
+
+    void SetLockOnTarget(IEntity lockOnTarget)
+    {
+        m_lockOnTarget = lockOnTarget;
+    }
+
+    #region IAcitonable
+    public void BeginAction(IEntityMoveAction playerAction)
+    {
+        m_preActionState = m_movementStateMachine.GetCurrentState();
+        m_movementStateMachine.ChangeToState(MovementStateEnum.action);
+    }
+
+    public void EndAction()
+    {
+        m_movementStateMachine.ChangeToState(m_preActionState);
+    }
+
     public Vector3 GetActionHeading()
     {
-        return transform.forward;
+        return m_usableHeading;
+        //return transform.forward;
     }
 
     public Transform GetActionTransform()
@@ -95,9 +180,54 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity
 
     void IActionable.ForceMovement(Vector3 moveDir)
     {
-        m_navAgent.Move(moveDir * Time.deltaTime * m_navAgent.speed);
+        Debug.DrawRay(position, moveDir * m_navAgent.speed, Color.red);
+        transform.position += moveDir * Time.deltaTime * m_navAgent.speed;
+
+        m_navAgent.velocity = moveDir * m_navAgent.speed;
+
+        m_navAgent.nextPosition = position;
+        //m_navAgent.Move(moveDir * Time.deltaTime * m_navAgent.speed);
     }
     #endregion // ! IAcitonable
+
+    #region IEntity
+    public Bounds GetAABB()
+    {
+        return m_renderer.bounds;
+    }
+
+    public Transform GetCameraLookTransform()
+    {
+        return m_lockOnTransform;
+    }
+
+    public float GetTargetRadius()
+    {
+        return m_entityRadius;
+    }
+
+    public int GetTeam()
+    {
+        return m_team;
+    }
+    #endregion // ! IEntity
+
+    void SetHeadingToNavAgent()
+    {
+        //if(currentSpeed > 0.0001f)
+        //{
+        //    m_usableHeading = velocity / currentSpeed;
+        //}
+
+        // use desired velocity as that is the direction that the agent wants to travel.
+        // if using actual velocity, There are many times  that the agent will stand still and this does not give it enough time to find it's travel direction between attacks.
+        // Resulting in another attack the same direction which is not usually the correct attack direction.
+        float desiredSpeed = m_navAgent.desiredVelocity.magnitude;
+        if (desiredSpeed > 0.0001f)
+        {
+            m_usableHeading = m_navAgent.desiredVelocity / desiredSpeed;
+        }
+    }
 
     #region StateMachine
 
@@ -105,6 +235,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity
     {
         empty,
         follow,
+        attackFollow,
         action
     }
 
@@ -115,6 +246,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity
 
         states[(int)MovementStateEnum.empty] = new EmptyState();
         states[(int)MovementStateEnum.follow] = new FollowState();
+        states[(int)MovementStateEnum.attackFollow] = new AttackFollowState();
         states[(int)MovementStateEnum.action] = new ActionState();
 
         m_movementStateMachine = new PackagedStateMachine<EnemyController>(this, states);
@@ -135,7 +267,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity
 
         void IState<EnemyController>.Invoke(EnemyController owner)
         {
-            
+            owner.SetHeadingToNavAgent();
         }
     }
 
@@ -144,7 +276,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity
         void IState<EnemyController>.Enter(EnemyController owner)
         {
             owner.m_navAgent.enabled = true;
-            owner.m_navAgent.SetDestination(owner.m_currentAttackTarget.GetAttackTargetPosition());
+            owner.m_navAgent.SetDestination(owner.m_currentAttackTarget.position);
         }
 
         void IState<EnemyController>.Exit(EnemyController owner)
@@ -154,10 +286,36 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity
 
         void IState<EnemyController>.Invoke(EnemyController owner)
         {
-            Vector3 target = owner.m_currentAttackTarget.GetAttackTargetPosition();
-            Vector3 toTarget = target - owner.transform.position;
-            Vector3 position = target - toTarget.normalized * owner.m_currentAttackTarget.GetRadius();
-            owner.m_navAgent.SetDestination(position);
+            owner.SetHeadingToNavAgent();
+
+            var distance = owner.m_currentAttackTarget.GetTargetRadius() + owner.GetTargetRadius();
+            owner.UpdateFollowMovement(distance);
+        }
+    }
+
+    class AttackFollowState : IState<EnemyController>
+    {
+        void IState<EnemyController>.Enter(EnemyController owner)
+        {
+            owner.m_navAgent.enabled = true;
+            owner.m_navAgent.SetDestination(owner.m_currentAttackTarget.position);
+        }
+
+        void IState<EnemyController>.Exit(EnemyController owner)
+        {
+
+        }
+
+        void IState<EnemyController>.Invoke(EnemyController owner)
+        {
+            owner.SetHeadingToNavAgent();
+
+            var distance = owner.m_currentAttackTarget.GetTargetRadius() + owner.GetTargetRadius();
+            var remain = owner.UpdateFollowMovement(distance);
+            if (remain < distance + owner.m_entityAttack.attackDistance)
+            {
+                owner.TryBeginAttack(owner.debug_attackTarget, false);
+            }
         }
     }
 
@@ -165,12 +323,16 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity
     {
         void IState<EnemyController>.Enter(EnemyController owner)
         {
-            owner.m_navAgent.enabled = false;
+            //owner.m_navAgent.enabled = false;
+            //owner.m_navAgent.updatePosition = false;
+            //owner.m_navAgent.updateRotation = false;
         }
 
         void IState<EnemyController>.Exit(EnemyController owner)
         {
-
+            owner.m_navAgent.enabled = true;
+            //owner.m_navAgent.updatePosition = true;
+            //owner.m_navAgent.updateRotation = true;
         }
 
         void IState<EnemyController>.Invoke(EnemyController owner)
