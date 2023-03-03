@@ -47,6 +47,7 @@ public class ActionController
 
         m_beginActionEvent.Invoke();
 
+        m_actionTimer.targetTime = moveAction.GetActionTime();
         m_actionTimer.Reset();
         return true;
     }

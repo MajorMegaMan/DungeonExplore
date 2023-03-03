@@ -68,7 +68,11 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
     [SerializeField] float m_entityRadius = 1.0f;
     [SerializeField] int m_team = 0;
 
+    [Header("Navigation")]
+    [SerializeField] UnityEngine.AI.NavMeshObstacle m_navMeshObstacle;
+
     // Getters
+    public string entityName { get { return "Player, " + name; } }
     public Vector3 position { get { return transform.position; } }
     public float speed { get { return m_speed; } }
     public Vector3 velocity { get { return m_velocity; } }
@@ -119,6 +123,11 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
         }
 
         m_groundedStateMachine.Invoke();
+    }
+
+    private void LateUpdate()
+    {
+        m_navMeshObstacle.velocity = velocity;
     }
 
     void UpdateMovement()
@@ -227,15 +236,15 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
         IEntityMoveAction attackAction;
         if (playerRef.lockOn.isLockedOn)
         {
-            attackAction = m_entityAttack.BeginLockOnAttack(playerRef.lockOn.lockOnTarget);
+            attackAction = m_entityAttack.BeginLockOnAttack();
         }
         else
         {
-            attackAction = m_entityAttack.BeginStraghtAttack(playerRef.controller.heading);
+            attackAction = m_entityAttack.BeginStraghtAttack();
         }
         if (m_attackController.TryBeginAction(attackAction, playerRef.lockOn.lockOnTarget))
         {
-            playerRef.animate.anim.CrossFade(m_entityAttack.GetAnimationHashID(), m_entityAttack.animationTransitionTime, 0, 0.0f);
+            playerRef.animate.anim.CrossFade(m_entityAttack.GetAnimationHashID(), m_entityAttack.GetAnimationTransitionTime(), 0, 0.0f);
         }
     }
 

@@ -30,6 +30,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     [SerializeField] float m_entityRadius = 1.0f;
     [SerializeField] int m_team = 0;
 
+    public string entityName { get { return "Enemy, " + name; } }
     public Vector3 position { get { return transform.position; } }
     public float speed { get { return m_navAgent.speed; } }
     public Vector3 velocity { get { return m_navAgent.velocity; } }
@@ -130,23 +131,26 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         }
     }
 
+    int debugActionIndex = 0;
     void TryBeginAttack(IEntity attackTarget, bool lockOnAttack)
     {
         IEntityMoveAction attackAction;
         if (lockOnAttack)
         {
-            attackAction = m_entityAttack.BeginLockOnAttack(attackTarget);
+            attackAction = m_entityAttack.BeginLockOnAttack(debugActionIndex);
         }
         else
         {
             Vector3 toTarget = attackTarget.position - position;
             toTarget = toTarget.normalized;
-            attackAction = m_entityAttack.BeginStraghtAttack(toTarget);
+            attackAction = m_entityAttack.BeginStraghtAttack(debugActionIndex);
             //attackAction = m_entityAttack.BeginStraghtAttack(heading);
         }
         if (m_attackController.TryBeginAction(attackAction, attackTarget))
         {
-            m_anim.anim.CrossFade(m_entityAttack.GetAnimationHashID(), m_entityAttack.animationTransitionTime, 0, 0.0f);
+            m_anim.anim.CrossFade(m_entityAttack.GetAnimationHashID(), m_entityAttack.GetAnimationTransitionTime(debugActionIndex), 0, 0.0f);
+
+            debugActionIndex = (debugActionIndex + 1) % m_entityAttack.weaponActionCount;
         }
     }
 
@@ -181,12 +185,13 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     void IActionable.ForceMovement(Vector3 moveDir)
     {
         Debug.DrawRay(position, moveDir * m_navAgent.speed, Color.red);
-        transform.position += moveDir * Time.deltaTime * m_navAgent.speed;
+        //transform.position += moveDir * Time.deltaTime * m_navAgent.speed;
+        //
+        
+        m_navAgent.Move(moveDir * Time.deltaTime * m_navAgent.speed);
 
         m_navAgent.velocity = moveDir * m_navAgent.speed;
-
-        m_navAgent.nextPosition = position;
-        //m_navAgent.Move(moveDir * Time.deltaTime * m_navAgent.speed);
+        //m_navAgent.nextPosition = position;
     }
     #endregion // ! IAcitonable
 
@@ -262,7 +267,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
         void IState<EnemyController>.Exit(EnemyController owner)
         {
-            
+            owner.m_navAgent.enabled = true;
         }
 
         void IState<EnemyController>.Invoke(EnemyController owner)
@@ -275,7 +280,6 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     {
         void IState<EnemyController>.Enter(EnemyController owner)
         {
-            owner.m_navAgent.enabled = true;
             owner.m_navAgent.SetDestination(owner.m_currentAttackTarget.position);
         }
 
@@ -297,7 +301,6 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     {
         void IState<EnemyController>.Enter(EnemyController owner)
         {
-            owner.m_navAgent.enabled = true;
             owner.m_navAgent.SetDestination(owner.m_currentAttackTarget.position);
         }
 
@@ -312,7 +315,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
             var distance = owner.m_currentAttackTarget.GetTargetRadius() + owner.GetTargetRadius();
             var remain = owner.UpdateFollowMovement(distance);
-            if (remain < distance + owner.m_entityAttack.attackDistance)
+            if (remain < distance + owner.m_entityAttack.GetAttackDistance(owner.debugActionIndex))
             {
                 owner.TryBeginAttack(owner.debug_attackTarget, false);
             }
@@ -330,7 +333,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
         void IState<EnemyController>.Exit(EnemyController owner)
         {
-            owner.m_navAgent.enabled = true;
+            //owner.m_navAgent.enabled = true;
             //owner.m_navAgent.updatePosition = true;
             //owner.m_navAgent.updateRotation = true;
         }

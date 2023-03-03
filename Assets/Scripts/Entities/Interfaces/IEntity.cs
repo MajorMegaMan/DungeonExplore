@@ -6,6 +6,7 @@ using UnityEngine;
 // Also serves as a way for "Lock On" to work.
 public interface IEntity
 {
+    public string entityName { get; }
     public Vector3 position { get; }
     public float speed { get; }
     public Vector3 velocity { get; }

@@ -85,8 +85,6 @@ public class LockOnManager : BBB.VariableMonoSingletonBase<LockOnManager>
             {
                 focusedTarget = target;
                 focusedDot = dot;
-
-                Debug.Log(focusedTarget.GetCameraLookTransform().parent.name);
             }
         }
 

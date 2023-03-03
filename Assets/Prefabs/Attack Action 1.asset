@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_readyTime: 0.8
   m_moveTime: 1
+  m_attackDistance: 1
   m_velocityCurve:
     serializedVersion: 2
     m_Curve:
@@ -65,5 +66,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  m_hitEnableTime: 0.5
+  m_hitDisableTime: 0.85
   m_animationID: Attack_1
   m_animationTransitionTime: 0.1
