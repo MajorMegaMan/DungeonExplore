@@ -52,6 +52,25 @@ public class ActionController
         return true;
     }
 
+    public void ForceBeginAction(IEntityMoveAction moveAction, IEntity lockOnTarget)
+    {
+        if (isActioning)
+        {
+            m_actionableEntity.SwitchAction();
+        }
+
+        m_currentAction = moveAction;
+        m_performUpdate = InternalPerformAction;
+
+        m_actionableEntity.BeginAction(moveAction);
+        moveAction.BeginAction(m_actionableEntity, lockOnTarget);
+
+        m_beginActionEvent.Invoke();
+
+        m_actionTimer.targetTime = moveAction.GetActionTime();
+        m_actionTimer.Reset();
+    }
+
     // This is the update Tick for the Attack Controller
     public void PerformAction(float deltaTime)
     {
@@ -61,7 +80,7 @@ public class ActionController
 
     void InternalPerformAction(float deltaTime)
     {
-        m_actionTimer.Tick(deltaTime);
+        m_actionTimer.Tick(deltaTime * m_currentAction.GetTimeSpeed());
         m_currentAction.PerformAction(m_actionableEntity, m_actionTimer.normalisedTime);
 
         if (m_actionTimer.IsTargetReached())

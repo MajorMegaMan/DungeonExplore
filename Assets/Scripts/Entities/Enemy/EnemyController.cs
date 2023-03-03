@@ -17,6 +17,9 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
     [SerializeField] EntityAnimate m_anim;
 
+    [SerializeField] ScriptableMoveAction m_hurtActionSettings;
+    HurtAction m_hurtAction;
+
     [SerializeField] GameObject debug_attackTargetObject = null;
     IEntity debug_attackTarget = null;
 
@@ -57,7 +60,9 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         InitialiseStateMachine();
 
         m_attackController.Init(this);
-        m_entityAttack.Initialise(transform);
+        m_entityAttack.Initialise(transform, this);
+
+        m_hurtAction = new HurtAction(transform, m_hurtActionSettings);
     }
 
     // Start is called before the first frame update
@@ -148,7 +153,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         }
         if (m_attackController.TryBeginAction(attackAction, attackTarget))
         {
-            m_anim.anim.CrossFade(m_entityAttack.GetAnimationHashID(), m_entityAttack.GetAnimationTransitionTime(debugActionIndex), 0, 0.0f);
+            m_entityAttack.Animate(m_anim.anim, debugActionIndex);
 
             debugActionIndex = (debugActionIndex + 1) % m_entityAttack.weaponActionCount;
         }
@@ -162,13 +167,27 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     #region IAcitonable
     public void BeginAction(IEntityMoveAction playerAction)
     {
-        m_preActionState = m_movementStateMachine.GetCurrentState();
+        var currentState = m_movementStateMachine.GetCurrentState();
+        if(currentState != MovementStateEnum.action)
+        {
+            m_preActionState = currentState;
+        }
         m_movementStateMachine.ChangeToState(MovementStateEnum.action);
     }
 
     public void EndAction()
     {
         m_movementStateMachine.ChangeToState(m_preActionState);
+    }
+
+    public void CancelAction()
+    {
+        m_movementStateMachine.ChangeToState(m_preActionState);
+    }
+
+    public void SwitchAction()
+    {
+        
     }
 
     public Vector3 GetActionHeading()
@@ -214,6 +233,16 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     public int GetTeam()
     {
         return m_team;
+    }
+
+    public void ReceiveHit(IEntity attacker)
+    {
+        m_attackController.ForceBeginAction(m_hurtAction, attacker);
+        m_hurtAction.Animate(m_anim.anim);
+
+        // Turn towards the attacker
+        var toAttacker = attacker.position - position;
+        m_usableHeading = toAttacker.normalized;
     }
     #endregion // ! IEntity
 

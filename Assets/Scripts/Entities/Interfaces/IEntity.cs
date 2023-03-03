@@ -26,4 +26,42 @@ public interface IEntity
 
     // Used for attack targeting.
     int GetTeam();
+
+    void ReceiveHit(IEntity attacker);
+
+    static IEntity ValidateGameObject(GameObject gameObject)
+    {
+        if (gameObject == null)
+        {
+            return null;
+        }
+
+        var entity = gameObject.GetComponent<IEntity>();
+        if (entity != null)
+        {
+            return entity;
+        }
+        else
+        {
+            Debug.LogError("GameObject does not contain Component interface of IEntity. " + gameObject.name);
+            return null;
+        }
+    }
+
+    static MonoBehaviour ValidateEntityAsMonobehaviour(IEntity entity)
+    {
+        if (entity == null)
+        {
+            return null;
+        }
+
+        var component = (entity as MonoBehaviour);
+        if (component == null)
+        {
+            Debug.LogError("IEntity does not inherit from Monobehaviour. " + entity.entityName);
+            return null;
+        }
+
+        return component;
+    }
 }

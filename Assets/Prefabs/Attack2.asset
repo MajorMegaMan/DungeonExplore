@@ -67,3 +67,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   m_animationID: Attack_2
   m_animationTransitionTime: 0.1
+  m_animationDriveParameter: AttackDrive
+  m_animationDriveValue: 1
+  m_attackDistance: 1
+  m_hitEnableTime: 0.2
+  m_hitDisableTime: 0.8

@@ -12,55 +12,40 @@ public class WeaponHitReceiver : MonoBehaviour
 
     public void SetOwner(GameObject owner)
     {
-        if(owner == null)
-        {
-            m_owner = null;
-            m_entityOwner = null;
-            return;
-        }    
-
-        var entity = owner.GetComponent<IEntity>();
-        if(entity != null)
+        m_entityOwner = IEntity.ValidateGameObject(owner);
+        if (m_entityOwner != null)
         {
             m_owner = owner;
-            m_entityOwner = entity;
         }
         else
         {
-            Debug.LogError("GameObject does not contain Component interface of IEntity. " + owner.name);
             m_owner = null;
-            m_entityOwner = null;
         }
     }
 
     public void SetOwner(IEntity owner)
     {
-        if (owner == null)
+        var component = IEntity.ValidateEntityAsMonobehaviour(owner);
+        if (component == null)
         {
             m_owner = null;
             m_entityOwner = null;
             return;
-        }
-
-        var component = (owner as MonoBehaviour);
-        if(component == null)
-        {
-            Debug.LogError("IEntity does not inherit from Monobehaviour. " + owner.entityName);
-            m_owner = null;
-            m_entityOwner = null;
-            return;
-        }
-        var ownerGameObject = component.gameObject;
-        if (ownerGameObject != null)
-        {
-            m_owner = ownerGameObject;
-            m_entityOwner = owner;
         }
         else
         {
-            Debug.LogError("GameObject does not exist in component somehow, this probvably means this method doesn't work properly. " + component.name);
-            m_owner = null;
-            m_entityOwner = null;
+            var ownerGameObject = component.gameObject;
+            if (ownerGameObject != null)
+            {
+                m_owner = ownerGameObject;
+                m_entityOwner = owner;
+            }
+            else
+            {
+                Debug.LogError("GameObject does not exist in component somehow, this probvably means this method doesn't work properly. " + component.name);
+                m_owner = null;
+                m_entityOwner = null;
+            }
         }
     }
 

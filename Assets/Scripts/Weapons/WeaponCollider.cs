@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class WeaponCollider : MonoBehaviour
 {
+    [SerializeField] GameObject m_owner = null;
+    IEntity m_entityOwner = null;
+
+    public IEntity owner { get { return m_entityOwner; } }
+
     [SerializeField] Vector3 m_offset = Vector3.zero;
     [SerializeField] Vector3 m_size = Vector3.one;
     [SerializeField] Quaternion m_rotation = Quaternion.identity;
@@ -41,7 +46,7 @@ public class WeaponCollider : MonoBehaviour
                 if(m_hitTargets.Add(hitTarget))
                 {
                     // Entity was hit during this weapon pass.
-                    Debug.Log(hitTarget.owner.entityName);
+                    hitTarget.owner.ReceiveHit(m_entityOwner);
                 }
             }
         }
@@ -76,9 +81,50 @@ public class WeaponCollider : MonoBehaviour
         return Physics.OverlapBox(transform.position + localOffset, localSize, transform.rotation * m_rotation, m_targetLayers, QueryTriggerInteraction.Ignore);
     }
 
+    public void SetOwner(GameObject owner)
+    {
+        m_entityOwner = IEntity.ValidateGameObject(owner);
+        if (m_entityOwner != null)
+        {
+            m_owner = owner;
+        }
+        else
+        {
+            m_owner = null;
+        }
+    }
+
+    public void SetOwner(IEntity owner)
+    {
+        var component = IEntity.ValidateEntityAsMonobehaviour(owner);
+        if (component == null)
+        {
+            m_owner = null;
+            m_entityOwner = null;
+            return;
+        }
+        else
+        {
+            var ownerGameObject = component.gameObject;
+            if (ownerGameObject != null)
+            {
+                m_owner = ownerGameObject;
+                m_entityOwner = owner;
+            }
+            else
+            {
+                Debug.LogError("GameObject does not exist in component somehow, this probvably means this method doesn't work properly. " + component.name);
+                m_owner = null;
+                m_entityOwner = null;
+            }
+        }
+    }
+
     private void OnValidate()
     {
-        if(Application.isPlaying)
+        SetOwner(m_owner);
+
+        if (Application.isPlaying)
         {
             enabled = m_active;
         }

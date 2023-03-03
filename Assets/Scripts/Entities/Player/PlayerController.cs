@@ -95,7 +95,7 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
         m_jumpSquatTimer.targetReachedEvent.AddListener(JumpRelease);
 
         m_attackController.Init(this);
-        m_entityAttack.Initialise(transform);
+        m_entityAttack.Initialise(transform, this);
     }
 
     // Start is called before the first frame update
@@ -244,7 +244,7 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
         }
         if (m_attackController.TryBeginAction(attackAction, playerRef.lockOn.lockOnTarget))
         {
-            playerRef.animate.anim.CrossFade(m_entityAttack.GetAnimationHashID(), m_entityAttack.GetAnimationTransitionTime(), 0, 0.0f);
+            m_entityAttack.Animate(playerRef.animate.anim);
         }
     }
 
@@ -269,6 +269,11 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
     {
         return m_team;
     }
+
+    public void ReceiveHit(IEntity attacker)
+    {
+        Debug.Log(entityName + " was hit by " + attacker.entityName);
+    }
     #endregion // ! IEntity
 
     #region IActionable
@@ -280,6 +285,16 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
     public void EndAction()
     {
         SmartSetControllableState();
+    }
+
+    public void CancelAction()
+    {
+        SmartSetControllableState();
+    }
+
+    public void SwitchAction()
+    {
+
     }
 
     public Vector3 GetActionHeading()

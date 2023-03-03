@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fb12817113535e4cb150a39ed075993, type: 3}
-  m_Name: Attack Action 1
+  m_Script: {fileID: 11500000, guid: f4cd9855fd9854a45899218a96693375, type: 3}
+  m_Name: Hurt Action 1
   m_EditorClassIdentifier: 
-  m_readyTime: 0.8
+  m_readyTime: 1
   m_moveTime: 1
   m_velocityCurve:
     serializedVersion: 2
@@ -65,10 +65,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_animationID: Attack_1
+  m_animationID: Hurt_1
   m_animationTransitionTime: 0.1
-  m_animationDriveParameter: AttackDrive
+  m_animationDriveParameter: HurtDrive
   m_animationDriveValue: 1
-  m_attackDistance: 1
-  m_hitEnableTime: 0.5
-  m_hitDisableTime: 0.85

@@ -45,4 +45,9 @@ public class SimpleLockOnTarget : MonoBehaviour, IEntity
     {
         return m_team;
     }
+
+    public void ReceiveHit(IEntity attacker)
+    {
+        Debug.Log(entityName + " was hit.");
+    }
 }

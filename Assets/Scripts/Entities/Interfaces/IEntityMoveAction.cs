@@ -6,6 +6,7 @@ public interface IEntityMoveAction
 {
     float GetActionTime();
     Vector3 GetDestination();
+    float GetTimeSpeed();
 
     void BeginAction(IActionable actionableEntity, IEntity target);
     void PerformAction(IActionable actionableEntity, float t);

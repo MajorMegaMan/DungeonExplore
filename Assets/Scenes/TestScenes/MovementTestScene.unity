@@ -3206,6 +3206,8 @@ MonoBehaviour:
     m_weaponSettings: {fileID: 11400000, guid: 07a1c381d52e9ef4a855687f9cb7cec5, type: 2}
     m_weaponCollider: {fileID: 1453679047}
   m_anim: {fileID: 924908905}
+  m_hurtActionSettings: {fileID: 11400000, guid: b55d42466784c924d8fdc866e249ef33,
+    type: 2}
   debug_attackTargetObject: {fileID: 1196941788}
   m_lockOnTransform: {fileID: 1518793145}
   m_renderer: {fileID: 924908902}

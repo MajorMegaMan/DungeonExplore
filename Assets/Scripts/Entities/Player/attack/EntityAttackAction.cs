@@ -10,6 +10,7 @@ public class EntityAttackAction
     [SerializeField] WeaponSettings m_weaponSettings;
     List<ScriptableAttackAction> m_attackActionList;
     List<int> m_animationHashIDList;
+    List<int> m_animationDriveList;
 
     [SerializeField] WeaponCollider m_weaponCollider;
 
@@ -18,24 +19,26 @@ public class EntityAttackAction
     StraightAttack m_straightMoveAction;
     LockOnAttack m_lockOnMoveAction;
 
-    public void Initialise(Transform origin)
+    public void Initialise(Transform origin, IEntity entity)
     {
         m_straightMoveAction = new StraightAttack(origin);
         m_lockOnMoveAction = new LockOnAttack(origin);
 
         m_attackActionList = new List<ScriptableAttackAction>();
         m_animationHashIDList = new List<int>();
+        m_animationDriveList = new List<int>();
 
         SetWeaponSettings(m_weaponSettings);
 
         SetAttackAction(0);
-        SetWeaponCollider(m_weaponCollider);
+        SetWeaponCollider(m_weaponCollider, entity);
     }
 
     public void SetWeaponSettings(WeaponSettings weaponSettings)
     {
         m_attackActionList.Clear();
         m_animationHashIDList.Clear();
+        m_animationDriveList.Clear();
 
         if (weaponSettings != null)
         {
@@ -47,6 +50,7 @@ public class EntityAttackAction
                 {
                     m_attackActionList.Add(action);
                     m_animationHashIDList.Add(Animator.StringToHash(action.animationStateID));
+                    m_animationDriveList.Add(Animator.StringToHash(action.animationDriveParameter));
                 }
                 else
                 {
@@ -65,10 +69,11 @@ public class EntityAttackAction
         m_animationHashID = m_animationHashIDList[index];
     }
 
-    public void SetWeaponCollider(WeaponCollider weaponCollider)
+    public void SetWeaponCollider(WeaponCollider weaponCollider, IEntity entity)
     {
         if (weaponCollider != null)
         {
+            weaponCollider.SetOwner(entity);
             m_straightMoveAction.SetWeaponCollider(weaponCollider);
             m_lockOnMoveAction.SetWeaponCollider(weaponCollider);
         }
@@ -101,6 +106,12 @@ public class EntityAttackAction
     {
         index = index % m_attackActionList.Count;
         return m_attackActionList[index].animationTransitionTime;
+    }
+
+    public void Animate(Animator anim, int index = 0)
+    {
+        anim.SetFloat(m_animationDriveList[index], m_attackActionList[index].animationDriveValue);
+        anim.CrossFade(GetAnimationHashID(), GetAnimationTransitionTime(index), 0, 0.0f);
     }
 }
 
@@ -184,6 +195,11 @@ public class StraightAttack : IEntityMoveAction
         return m_origin.position + m_direction;
     }
 
+    public float GetTimeSpeed()
+    {
+        return m_scriptableAttackAction.animationDriveValue;
+    }
+
     public void BeginAction(IActionable actionableEntity, IEntity target)
     {
         if(target == null)
@@ -253,6 +269,11 @@ public class LockOnAttack : IEntityMoveAction
         Vector3 toTarget = pos - m_origin.position;
 
         return pos - toTarget.normalized * m_target.GetTargetRadius();
+    }
+
+    public float GetTimeSpeed()
+    {
+        return m_scriptableAttackAction.animationDriveValue;
     }
 
     public void BeginAction(IActionable actionableEntity, IEntity target)
