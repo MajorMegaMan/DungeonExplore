@@ -11,6 +11,9 @@ public class EntityAnimate : MonoBehaviour
     AnimationStateID m_movementParameter;
     AnimationStateID m_horizontalMovementParameter;
 
+    AnimationStateID m_movementState;
+    AnimationStateID m_deathState;
+
     Vector3 m_targetHeading;
 
     float m_smoothSpeed = 0.0f;
@@ -95,6 +98,12 @@ public class EntityAnimate : MonoBehaviour
         m_horizontalMovementParameter = new AnimationStateID(m_animationData.horizontalMovementParameter);
         m_movementParameter.Initialise();
         m_horizontalMovementParameter.Initialise();
+
+        m_movementState = new AnimationStateID(m_animationData.movementState);
+        m_movementState.Initialise();
+
+        m_deathState = new AnimationStateID(m_animationData.deathState);
+        m_deathState.Initialise();
     }
 
     public void SetEntity(IEntity entity)
@@ -141,5 +150,15 @@ public class EntityAnimate : MonoBehaviour
             m_targetHeading = Vector3.Slerp(m_targetHeading, destinationDirection, tValue);
         }
         transform.forward = additionalRot * m_targetHeading;
+    }
+
+    public void SetAnimToMovement()
+    {
+        m_anim.CrossFade(m_movementState.GetID(), m_animationData.commonStateTransitionTime);
+    }
+
+    public void SetAnimToDeath()
+    {
+        m_anim.CrossFade(m_deathState.GetID(), m_animationData.commonStateTransitionTime);
     }
 }

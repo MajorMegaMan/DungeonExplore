@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu]
 public class EntityAnimationData : ScriptableObject
 {
+    [Header("Movement")]
     [SerializeField] AnimationStateID m_movementParameter;
     [SerializeField] AnimationStateID m_horizontalMovementParameter;
 
@@ -22,6 +23,12 @@ public class EntityAnimationData : ScriptableObject
 
     [SerializeField] float m_smoothSpeedTime = 0.2f;
 
+    [Header("Common States")]
+    [SerializeField] AnimationStateID m_movementState;
+    [SerializeField] AnimationStateID m_deathState;
+
+    [SerializeField] float m_commonStateTransitionTime = 0.1f;
+
     public AnimationStateID movementParameter { get { return m_movementParameter; } }
     public AnimationStateID horizontalMovementParameter { get { return m_horizontalMovementParameter; } }
 
@@ -33,6 +40,10 @@ public class EntityAnimationData : ScriptableObject
     public Quaternion runRot { get { return m_runRot; } }
 
     public float smoothSpeedTime { get { return m_smoothSpeedTime; } }
+
+    public AnimationStateID movementState { get { return m_movementState; } }
+    public AnimationStateID deathState { get { return m_deathState; } }
+    public float commonStateTransitionTime { get { return m_commonStateTransitionTime; } }
 
     private void OnValidate()
     {

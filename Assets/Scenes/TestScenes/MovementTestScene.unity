@@ -535,6 +535,11 @@ MonoBehaviour:
   m_renderer: {fileID: 1260103895}
   m_targetRadius: 1
   m_team: 0
+  m_stats:
+    m_currentHealth: 100
+    m_baseMaxHealth: 100
+    m_baseStrength: 10
+    m_baseDefense: 5
 --- !u!1 &349833822
 GameObject:
   m_ObjectHideFlags: 0
@@ -748,6 +753,11 @@ MonoBehaviour:
   m_renderer: {fileID: 1145946597}
   m_targetRadius: 1
   m_team: 0
+  m_stats:
+    m_currentHealth: 100
+    m_baseMaxHealth: 100
+    m_baseStrength: 10
+    m_baseDefense: 5
 --- !u!1001 &496695577
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3208,11 +3218,19 @@ MonoBehaviour:
   m_anim: {fileID: 924908905}
   m_hurtActionSettings: {fileID: 11400000, guid: b55d42466784c924d8fdc866e249ef33,
     type: 2}
-  debug_attackTargetObject: {fileID: 1196941788}
   m_lockOnTransform: {fileID: 1518793145}
   m_renderer: {fileID: 924908902}
   m_entityRadius: 1
   m_team: 0
+  m_stats:
+    m_currentHealth: 100
+    m_baseMaxHealth: 100
+    m_baseStrength: 10
+    m_baseDefense: 5
+  m_weaponHitReceiver: {fileID: 1735297256}
+  debug_attackTargetObject: {fileID: 1196941788}
+  debug_revive: 0
+  debug_currentState: 0
 --- !u!195 &1291205995
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -4220,6 +4238,11 @@ MonoBehaviour:
   m_renderer: {fileID: 101668990}
   m_targetRadius: 1
   m_team: 0
+  m_stats:
+    m_currentHealth: 100
+    m_baseMaxHealth: 100
+    m_baseStrength: 10
+    m_baseDefense: 5
 --- !u!1 &1838731669
 GameObject:
   m_ObjectHideFlags: 0
@@ -4306,6 +4329,11 @@ PrefabInstance:
       propertyPath: m_playerViewCamera
       value: 
       objectReference: {fileID: 234211403}
+    - target: {fileID: 8729045210709861425, guid: 67be9991cea1c95498a8db55aed87308,
+        type: 3}
+      propertyPath: debug_invulnerable
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8729045210709861427, guid: 67be9991cea1c95498a8db55aed87308,
         type: 3}
       propertyPath: m_Name
@@ -4596,6 +4624,11 @@ MonoBehaviour:
   m_renderer: {fileID: 1620954151}
   m_targetRadius: 1
   m_team: 0
+  m_stats:
+    m_currentHealth: 100
+    m_baseMaxHealth: 100
+    m_baseStrength: 10
+    m_baseDefense: 5
 --- !u!1 &1990457619
 GameObject:
   m_ObjectHideFlags: 0
@@ -4693,6 +4726,11 @@ MonoBehaviour:
   m_renderer: {fileID: 0}
   m_targetRadius: 1
   m_team: 0
+  m_stats:
+    m_currentHealth: 100
+    m_baseMaxHealth: 100
+    m_baseStrength: 10
+    m_baseDefense: 5
 --- !u!1 &2050708813
 GameObject:
   m_ObjectHideFlags: 0
@@ -4979,6 +5017,11 @@ MonoBehaviour:
   m_renderer: {fileID: 1077748851}
   m_targetRadius: 1
   m_team: 0
+  m_stats:
+    m_currentHealth: 100
+    m_baseMaxHealth: 100
+    m_baseStrength: 10
+    m_baseDefense: 5
 --- !u!1 &2128494268
 GameObject:
   m_ObjectHideFlags: 0

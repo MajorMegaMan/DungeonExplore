@@ -20,9 +20,6 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     [SerializeField] ScriptableMoveAction m_hurtActionSettings;
     HurtAction m_hurtAction;
 
-    [SerializeField] GameObject debug_attackTargetObject = null;
-    IEntity debug_attackTarget = null;
-
     //[SerializeField] SimpleLockOnTarget m_targetComponent;
 
     MovementStateEnum m_preActionState = 0;
@@ -32,6 +29,16 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     [SerializeField] Renderer m_renderer;
     [SerializeField] float m_entityRadius = 1.0f;
     [SerializeField] int m_team = 0;
+    [SerializeField] EntityStats m_stats;
+
+    [SerializeField] WeaponHitReceiver m_weaponHitReceiver;
+
+    [Header("Debug")]
+    [SerializeField] GameObject debug_attackTargetObject = null;
+    IEntity debug_attackTarget = null;
+
+    [SerializeField] bool debug_revive = false;
+    public MovementStateEnum debug_currentState;
 
     public string entityName { get { return "Enemy, " + name; } }
     public Vector3 position { get { return transform.position; } }
@@ -41,11 +48,12 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
     Vector3 m_usableHeading = Vector3.zero;
     public Vector3 heading { get { return m_usableHeading; } }
+    public EntityStats entityStats { get { return m_stats; } }
 
 
     ILockOnTargeter m_selfTargeter;
     IEntity m_lockOnTarget;
-    IEntity ILockOnTargeter.lockOnTarget { get { return m_lockOnTarget; } set { SetLockOnTarget(value); } }
+    IEntity ILockOnTargeter.lockOnTarget { get { return m_lockOnTarget; } }
 
     private void Awake()
     {
@@ -86,7 +94,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     void Update()
     {
         m_movementStateMachine.Invoke();
-        Debug.DrawRay(position, velocity, Color.green);
+        debug_currentState = m_movementStateMachine.GetCurrentState();
     }
 
     // Returns the distance remaining to the target
@@ -159,10 +167,12 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         }
     }
 
-    void SetLockOnTarget(IEntity lockOnTarget)
+    #region ILockOnTargeter
+    void ILockOnTargeter.SetLockOnTarget(IEntity lockOnTarget)
     {
         m_lockOnTarget = lockOnTarget;
     }
+    #endregion // ! ILockOnTargeter
 
     #region IAcitonable
     public void BeginAction(IEntityMoveAction playerAction)
@@ -185,7 +195,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         m_movementStateMachine.ChangeToState(m_preActionState);
     }
 
-    public void SwitchAction()
+    public void SwitchAction(IEntityMoveAction previous, IEntityMoveAction next)
     {
         
     }
@@ -202,11 +212,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     }
 
     void IActionable.ForceMovement(Vector3 moveDir)
-    {
-        Debug.DrawRay(position, moveDir * m_navAgent.speed, Color.red);
-        //transform.position += moveDir * Time.deltaTime * m_navAgent.speed;
-        //
-        
+    {        
         m_navAgent.Move(moveDir * Time.deltaTime * m_navAgent.speed);
 
         m_navAgent.velocity = moveDir * m_navAgent.speed;
@@ -240,11 +246,50 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         m_attackController.ForceBeginAction(m_hurtAction, attacker);
         m_hurtAction.Animate(m_anim.anim);
 
+        entityStats.ReceiveDamage(attacker.entityStats.CalculateAttackStrength());
+
         // Turn towards the attacker
         var toAttacker = attacker.position - position;
         m_usableHeading = toAttacker.normalized;
+
+        if(entityStats.IsDead())
+        {
+            // Should Die
+            Die();
+        }
     }
     #endregion // ! IEntity
+
+    void Die()
+    {
+        m_movementStateMachine.ChangeToState(MovementStateEnum.dead);
+    }
+
+    void EnterDeadState()
+    {
+        m_weaponHitReceiver.gameObject.SetActive(false);
+        m_navAgent.enabled = false;
+        m_anim.SetAnimToDeath();
+        LockOnManager.DeregisterLockOnTarget(this);
+    }
+
+    void ExitDeadState()
+    {
+        m_weaponHitReceiver.gameObject.SetActive(true);
+        m_navAgent.enabled = true;
+        m_anim.SetAnimToMovement();
+        LockOnManager.RegisterLockOnTarget(this);
+    }
+
+    public void Revive()
+    {
+        entityStats.HealToFull();
+        if (m_movementStateMachine.GetCurrentState() == MovementStateEnum.dead)
+        {
+            // Debug Switch to auto aggro
+            AttackFollowTarget(debug_attackTarget);
+        }
+    }
 
     void SetHeadingToNavAgent()
     {
@@ -270,7 +315,8 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         empty,
         follow,
         attackFollow,
-        action
+        action,
+        dead
     }
 
     void InitialiseStateMachine()
@@ -282,6 +328,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         states[(int)MovementStateEnum.follow] = new FollowState();
         states[(int)MovementStateEnum.attackFollow] = new AttackFollowState();
         states[(int)MovementStateEnum.action] = new ActionState();
+        states[(int)MovementStateEnum.dead] = new DeadState();
 
         m_movementStateMachine = new PackagedStateMachine<EnemyController>(this, states);
         m_movementStateMachine.InitialiseState(MovementStateEnum.empty);
@@ -373,7 +420,37 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         }
     }
 
+    class DeadState : IState<EnemyController>
+    {
+        void IState<EnemyController>.Enter(EnemyController owner)
+        {
+            owner.EnterDeadState();
+        }
+
+        void IState<EnemyController>.Exit(EnemyController owner)
+        {
+            owner.ExitDeadState();
+        }
+
+        void IState<EnemyController>.Invoke(EnemyController owner)
+        {
+            
+        }
+    }
+
     #endregion // ! StateMachine
+
+    private void OnValidate()
+    {
+        if(Application.isPlaying && m_movementStateMachine != null)
+        {
+            if(debug_revive)
+            {
+                debug_revive = false;
+                Revive();
+            }
+        }
+    }
 }
 
 public static class PackagedSMExtensionEnemy

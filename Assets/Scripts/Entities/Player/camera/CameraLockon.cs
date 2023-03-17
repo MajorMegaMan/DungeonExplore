@@ -35,12 +35,19 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
     {
         m_camControl = GetComponent<PlayerCameraController>();
         m_selfTargeter = this;
+
+        LockOnManager.SetOwner(this);
     }
 
     // Start is called before the first frame update
     void Start()
     {
         m_lockOnReticle.SetCamera(inputReceiver.playerViewCamera);
+    }
+
+    private void OnDestroy()
+    {
+        LockOnManager.SetOwner(null);
     }
 
     // Update is called once per frame
@@ -54,19 +61,17 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
                 if (lockOnTarget != null)
                 {
                     SetLockOnTarget(lockOnTarget);
-                    m_lockOnReticle.gameObject.SetActive(true);
-                    m_lockOnReticle.SetTargetFollow(lockOnTarget.GetCameraLookTransform());
                 }
             }
             else
             {
                 SetLockOnTarget(null);
-                m_lockOnReticle.gameObject.SetActive(false);
             }
         }
 
         if (m_lockOnTarget != null)
         {
+            // Bill board the lock on image towards the camera.
             Vector3 pos = m_lockOnTarget.GetCameraLookTransform().position;
             m_currentCamDistance = (pos - m_origin.position).magnitude;
             SetLockOnPosition(pos);
@@ -98,9 +103,15 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
     public void SetLockOnTarget(IEntity lockOnTarget)
     {
         m_lockOnTarget = lockOnTarget;
-        if (m_lockOnTarget == null)
+        if (m_lockOnTarget != null)
+        {
+            m_lockOnReticle.gameObject.SetActive(true);
+            m_lockOnReticle.SetTargetFollow(lockOnTarget.GetCameraLookTransform());
+        }
+        else
         {
             m_camControl.cinemachineCameraTarget.transform.position = m_origin.position;
+            m_lockOnReticle.gameObject.SetActive(false);
         }
     }
 

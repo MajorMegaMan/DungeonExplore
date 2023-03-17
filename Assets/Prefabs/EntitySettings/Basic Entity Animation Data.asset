@@ -63,3 +63,8 @@ MonoBehaviour:
   m_walkEuler: {x: 0, y: 0, z: 0}
   m_runEuler: {x: 0, y: 40, z: 0}
   m_smoothSpeedTime: 0.2
+  m_movementState:
+    m_name: Motion_Tree
+  m_deathState:
+    m_name: Death_1
+  m_commonStateTransitionTime: 0.1

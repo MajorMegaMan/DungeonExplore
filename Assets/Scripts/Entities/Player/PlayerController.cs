@@ -67,9 +67,19 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
     [Header("Entity")]
     [SerializeField] float m_entityRadius = 1.0f;
     [SerializeField] int m_team = 0;
+    [SerializeField] EntityStats m_stats;
+
+    [SerializeField] ScriptableMoveAction m_hurtActionSettings;
+    HurtAction m_hurtAction;
+
+    [SerializeField] WeaponHitReceiver m_weaponHitReceiver;
 
     [Header("Navigation")]
     [SerializeField] UnityEngine.AI.NavMeshObstacle m_navMeshObstacle;
+
+    [Header("Debug")]
+    [SerializeField] bool debug_invulnerable = false;
+    [SerializeField] bool debug_revive = false;
 
     // Getters
     public string entityName { get { return "Player, " + name; } }
@@ -78,6 +88,7 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
     public Vector3 velocity { get { return m_velocity; } }
     public float currentSpeed { get { return m_currentSpeed; } }
     public Vector3 heading { get { return m_heading; } }
+    public EntityStats entityStats { get { return m_stats; } }
 
     // totalVelocity is the movement velocity + vertical Velocity
     public Vector3 totalVelocity { get { return m_velocity + Vector3.up * m_verticalVelocity; } }
@@ -96,6 +107,8 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
 
         m_attackController.Init(this);
         m_entityAttack.Initialise(transform, this);
+
+        m_hurtAction = new HurtAction(transform, m_hurtActionSettings);
     }
 
     // Start is called before the first frame update
@@ -272,9 +285,55 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
 
     public void ReceiveHit(IEntity attacker)
     {
-        Debug.Log(entityName + " was hit by " + attacker.entityName);
+        if(debug_invulnerable)
+        {
+            // Exit early to prevent a hit.
+            return;
+        }
+        m_attackController.ForceBeginAction(m_hurtAction, attacker);
+        m_hurtAction.Animate(playerRef.animate.anim);
+
+        entityStats.ReceiveDamage(attacker.entityStats.CalculateAttackStrength());
+
+        //// Turn towards the attacker
+        //var toAttacker = attacker.position - position;
+        //m_usableHeading = toAttacker.normalized;
+
+        m_velocity = Vector3.zero;
+
+        if (entityStats.IsDead())
+        {
+            // Should Die
+            Die();
+        }
     }
     #endregion // ! IEntity
+
+    void Die()
+    {
+        m_groundedStateMachine.ChangeToState(GroundedStateEnum.dead);
+    }
+
+    void EnterDeadState()
+    {
+        m_weaponHitReceiver.gameObject.SetActive(false);
+        playerRef.animate.SetAnimToDeath();
+    }
+
+    void ExitDeadState()
+    {
+        m_weaponHitReceiver.gameObject.SetActive(true);
+        playerRef.animate.SetAnimToMovement();
+    }
+
+    public void Revive()
+    {
+        entityStats.HealToFull();
+        if(m_groundedStateMachine.GetCurrentState() == GroundedStateEnum.dead)
+        {
+            SmartSetControllableState();
+        }
+    }
 
     #region IActionable
     public void BeginAction(IEntityMoveAction playerAction)
@@ -292,7 +351,7 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
         SmartSetControllableState();
     }
 
-    public void SwitchAction()
+    public void SwitchAction(IEntityMoveAction previous, IEntityMoveAction next)
     {
 
     }
@@ -332,7 +391,8 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
         grounded,
         airborne,
         jumpSquat,
-        actioned
+        actioned,
+        dead
     }
 
     void InitialiseStateMachine()
@@ -343,6 +403,7 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
         groundedStates[(int)GroundedStateEnum.airborne] = new AirborneState();
         groundedStates[(int)GroundedStateEnum.jumpSquat] = new JumpSquatState();
         groundedStates[(int)GroundedStateEnum.actioned] = new ActionState();
+        groundedStates[(int)GroundedStateEnum.dead] = new DeadState();
 
         m_groundedStateMachine = new PackagedStateMachine<PlayerController>(this, groundedStates);
 
@@ -509,7 +570,10 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
 
         void IState<PlayerController>.Exit(PlayerController owner)
         {
-            
+            if (owner.m_attackController.isActioning)
+            {
+                owner.m_attackController.RawCancelAction();
+            }
         }
 
         void IState<PlayerController>.Invoke(PlayerController owner)
@@ -517,7 +581,37 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
             owner.m_attackController.PerformAction(Time.deltaTime);
         }
     }
+
+    class DeadState : IState<PlayerController>
+    {
+        void IState<PlayerController>.Enter(PlayerController owner)
+        {
+            owner.EnterDeadState();
+        }
+
+        void IState<PlayerController>.Exit(PlayerController owner)
+        {
+            owner.ExitDeadState();
+        }
+
+        void IState<PlayerController>.Invoke(PlayerController owner)
+        {
+
+        }
+    }
     #endregion // ! GroundedStates
+
+    private void OnValidate()
+    {
+        if (Application.isPlaying && m_groundedStateMachine != null)
+        {
+            if (debug_revive)
+            {
+                debug_revive = false;
+                Revive();
+            }
+        }
+    }
 }
 
 public static class PackagedSMExtensionPlayer

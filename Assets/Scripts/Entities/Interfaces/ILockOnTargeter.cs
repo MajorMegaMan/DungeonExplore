@@ -4,7 +4,9 @@ using UnityEngine;
 
 public interface ILockOnTargeter
 {
-    IEntity lockOnTarget { get; set; }
+    IEntity lockOnTarget { get; }
+
+    public void SetLockOnTarget(IEntity lockOnTarget);
 }
 
 static class ILockOnTargeterExtensions
@@ -19,7 +21,7 @@ namespace BBB.LockOn.Internal
 {
     public class EmptyLockOnTargeter : ILockOnTargeter
     {
-        IEntity ILockOnTargeter.lockOnTarget { get; set; }
+        public IEntity lockOnTarget { get; private set; }
 
         static EmptyLockOnTargeter _instance;
         public static EmptyLockOnTargeter instance { get { return _instance; } }
@@ -27,6 +29,11 @@ namespace BBB.LockOn.Internal
         static EmptyLockOnTargeter()
         {
             _instance = new EmptyLockOnTargeter();
+        }
+
+        void ILockOnTargeter.SetLockOnTarget(IEntity lockOnTarget)
+        {
+            this.lockOnTarget = lockOnTarget;
         }
     }
 }

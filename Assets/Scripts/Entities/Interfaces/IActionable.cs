@@ -14,7 +14,7 @@ public interface IActionable
     void CancelAction();
 
     // Called when an action is switched to another action. Actionable Entities may need additional logic when using another action.
-    void SwitchAction();
+    void SwitchAction(IEntityMoveAction previous, IEntityMoveAction next);
 
     Vector3 GetActionHeading();
 

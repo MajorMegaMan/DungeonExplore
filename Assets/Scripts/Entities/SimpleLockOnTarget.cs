@@ -8,6 +8,7 @@ public class SimpleLockOnTarget : MonoBehaviour, IEntity
     [SerializeField] Renderer m_renderer;
     [SerializeField] float m_targetRadius = 1.0f;
     [SerializeField] int m_team = 0;
+    [SerializeField] EntityStats m_stats;
 
     public string entityName { get { return "SimpleLockOnTarget, " + name; } }
     public Vector3 position { get { return transform.position; } }
@@ -15,6 +16,7 @@ public class SimpleLockOnTarget : MonoBehaviour, IEntity
     public Vector3 velocity { get { return Vector3.zero; } }
     public float currentSpeed { get { return 0.0f; } }
     public Vector3 heading { get { return Vector3.zero; } }
+    public EntityStats entityStats { get { return m_stats; } }
 
     private void Start()
     {
@@ -49,5 +51,8 @@ public class SimpleLockOnTarget : MonoBehaviour, IEntity
     public void ReceiveHit(IEntity attacker)
     {
         Debug.Log(entityName + " was hit.");
+        Debug.Log(entityName + "::Before::" + entityStats.currentHealth);
+        entityStats.ReceiveDamage(attacker.entityStats.CalculateAttackStrength());
+        Debug.Log(entityName + "::After::" + entityStats.currentHealth);
     }
 }

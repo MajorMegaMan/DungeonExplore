@@ -11,6 +11,8 @@ public class LockOnManager : BBB.VariableMonoSingletonBase<LockOnManager>
     // If the instance is destroyed there is no longer a need to reference into it anymore.
     static bool _instanceIsAwake = false;
 
+    ILockOnTargeter m_ownerLockOnTargeter;
+
     void Awake()
     {
         if(instance != this)
@@ -32,15 +34,34 @@ public class LockOnManager : BBB.VariableMonoSingletonBase<LockOnManager>
         }
     }
 
+    public static void SetOwner(ILockOnTargeter lockOnTargeter)
+    {
+        if (_instanceIsAwake)
+        {
+            instance.m_ownerLockOnTargeter = lockOnTargeter;
+        }
+    }
+
     public static void RegisterLockOnTarget(IEntity lockOnTarget)
     {
         instance.m_lockOnTargets.Add(lockOnTarget);
     }
 
+    void MemberDeregisterLockOnTarget(IEntity lockOnTarget)
+    {
+        m_lockOnTargets.Remove(lockOnTarget);
+        if (m_ownerLockOnTargeter != null && m_ownerLockOnTargeter.lockOnTarget == lockOnTarget)
+        {
+            m_ownerLockOnTargeter.SetLockOnTarget(null);
+        }
+    }
+
     public static void DeregisterLockOnTarget(IEntity lockOnTarget)
     {
         if(_instanceIsAwake)
-            instance.m_lockOnTargets.Remove(lockOnTarget);
+        {
+            instance.MemberDeregisterLockOnTarget(lockOnTarget);
+        }
     }
 
     public static IEntity FindLockOnTarget(Camera camera)

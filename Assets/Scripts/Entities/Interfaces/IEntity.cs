@@ -13,6 +13,8 @@ public interface IEntity
     public float currentSpeed { get; }
     public Vector3 heading { get; }
 
+    public EntityStats entityStats { get; }
+
     // Bounds of the entity. Used by the player cam to test if the entity is on screen and should be locked on.
     Bounds GetAABB();
 
@@ -29,6 +31,11 @@ public interface IEntity
 
     void ReceiveHit(IEntity attacker);
 
+    #region UnityValidation
+    // These Validation functions should be used when setting the entity objects within unity.
+    // They simply ensure that the Entity being targeted is inheriting a unity object.
+
+    // Tries to Find a Component that inherits from IEntity.
     static IEntity ValidateGameObject(GameObject gameObject)
     {
         if (gameObject == null)
@@ -48,6 +55,7 @@ public interface IEntity
         }
     }
 
+    // Tests if IEntity is also a Component Type.
     static MonoBehaviour ValidateEntityAsMonobehaviour(IEntity entity)
     {
         if (entity == null)
@@ -64,4 +72,5 @@ public interface IEntity
 
         return component;
     }
+    #endregion // UnityValidation
 }

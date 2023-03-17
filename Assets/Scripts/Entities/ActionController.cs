@@ -56,7 +56,8 @@ public class ActionController
     {
         if (isActioning)
         {
-            m_actionableEntity.SwitchAction();
+            m_currentAction.CancelAction(m_actionableEntity);
+            m_actionableEntity.SwitchAction(m_currentAction, moveAction);
         }
 
         m_currentAction = moveAction;
@@ -85,10 +86,18 @@ public class ActionController
 
         if (m_actionTimer.IsTargetReached())
         {
-            m_actionableEntity.EndAction();
             m_currentAction = null;
+            m_actionableEntity.EndAction();
             m_performUpdate = Empty;
         }
+    }
+
+    // Cancels without calling the actionableEntity Cancel
+    public void RawCancelAction()
+    {
+        m_currentAction.CancelAction(m_actionableEntity);
+        m_currentAction = null;
+        m_performUpdate = Empty;
     }
 
     static void Empty(float deltaTime)
