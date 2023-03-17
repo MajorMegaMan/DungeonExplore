@@ -10,6 +10,14 @@ public class WeaponHitReceiver : MonoBehaviour
 
     public IEntity owner { get { return m_entityOwner; } }
 
+    private void Awake()
+    {
+        if(m_owner != null)
+        {
+            SetOwner(m_owner);
+        }
+    }
+
     public void SetOwner(GameObject owner)
     {
         m_entityOwner = IEntity.ValidateGameObject(owner);

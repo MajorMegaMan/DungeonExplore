@@ -164,6 +164,8 @@ public class StraightAttack : IEntityMoveAction
 
     HitBoxEnabler m_enableHitBox;
 
+    public string actionName { get { return "StraightAttackAction"; } }
+
     public StraightAttack(Transform origin)
     {
         this.m_origin = origin;
@@ -236,6 +238,8 @@ public class LockOnAttack : IEntityMoveAction
     IEntity m_target;
 
     HitBoxEnabler m_enableHitBox;
+
+    public string actionName { get { return "LockOnAttackAction"; } }
 
     public LockOnAttack(Transform origin)
     {

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public interface IEntityMoveAction
 {
+    string actionName { get; }
     float GetActionTime();
     Vector3 GetDestination();
     float GetTimeSpeed();

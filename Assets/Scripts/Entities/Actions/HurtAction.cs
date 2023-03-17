@@ -11,6 +11,8 @@ public class HurtAction : IEntityMoveAction
     Transform m_origin;
     Vector3 m_direction;
 
+    public string actionName { get { return "HurtAction"; } }
+
     public HurtAction(Transform origin, ScriptableMoveAction scriptableMoveAction)
     {
         this.m_origin = origin;

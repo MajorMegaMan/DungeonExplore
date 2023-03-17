@@ -32,6 +32,13 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     [SerializeField] EntityStats m_stats;
 
     [SerializeField] WeaponHitReceiver m_weaponHitReceiver;
+    [SerializeField] SimpleAudioControl m_audio;
+
+    // Director Variables
+    EnemyDirector m_director;
+
+    [Header("Movement")]
+    [SerializeField] float m_retargetDistance = 0.2f;
 
     [Header("Debug")]
     [SerializeField] GameObject debug_attackTargetObject = null;
@@ -76,10 +83,13 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     // Start is called before the first frame update
     void Start()
     {
-        debug_attackTarget = debug_attackTargetObject.GetComponent<IEntity>();
-        if (debug_attackTarget != null)
+        if(debug_attackTargetObject != null)
         {
-            AttackFollowTarget(debug_attackTarget);
+            debug_attackTarget = debug_attackTargetObject.GetComponent<IEntity>();
+            if (debug_attackTarget != null)
+            {
+                AttackFollowTarget(debug_attackTarget);
+            }
         }
 
         m_navAgent.updateRotation = false;
@@ -97,6 +107,39 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         debug_currentState = m_movementStateMachine.GetCurrentState();
     }
 
+    #region Director
+    public void SetDirector(EnemyDirector director)
+    {
+        m_director = director;
+    }
+
+    public void ReceiveAttackSignal(IEntity attackTarget)
+    {
+        TryBeginAttack(attackTarget, false);
+    }
+
+    void RequestAttack()
+    {
+        if(m_director != null)
+        {
+            m_director.RequestAttack(this);
+        }
+        else
+        {
+            TryBeginAttack(debug_attackTarget, false);
+        }
+    }
+
+    void RevokeAttack()
+    {
+        if (m_director != null)
+        {
+            m_director.RevokeAttack(this);
+        }
+    }
+
+    #endregion // ! Director
+
     // Returns the distance remaining to the target
     float UpdateFollowMovement(float distance)
     {
@@ -105,12 +148,24 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         float remainDistance = toTarget.magnitude;
 
         Vector3 position = target;
-        if(distance > 0.0001f)
+        if(remainDistance > 0.0001f)
         {
             position = target - (toTarget / remainDistance) * (distance);
         }
-        m_navAgent.SetDestination(position);
+        // Only applying movement when outside the retarget distance should help remove the stuttering when standing in one location.
+        if(remainDistance > m_retargetDistance)
+        {
+            m_navAgent.SetDestination(position);
+        }
         return remainDistance;
+    }
+
+    // Sets the state to Empty
+    public void StopDoingAnything()
+    {
+        // Sets the state to Empty
+        m_currentAttackTarget = null;
+        m_movementStateMachine.ChangeToState(MovementStateEnum.empty);
     }
 
     void FollowTarget(IEntity attackTarget)
@@ -128,7 +183,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         }
     }
 
-    void AttackFollowTarget(IEntity attackTarget)
+    public void AttackFollowTarget(IEntity attackTarget)
     {
         if (attackTarget != null)
         {
@@ -257,6 +312,10 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
             // Should Die
             Die();
         }
+        else
+        {
+            m_audio.PlayHurt();
+        }
     }
     #endregion // ! IEntity
 
@@ -382,7 +441,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
         void IState<EnemyController>.Exit(EnemyController owner)
         {
-
+            owner.RevokeAttack();
         }
 
         void IState<EnemyController>.Invoke(EnemyController owner)
@@ -393,7 +452,12 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
             var remain = owner.UpdateFollowMovement(distance);
             if (remain < distance + owner.m_entityAttack.GetAttackDistance(owner.debugActionIndex))
             {
-                owner.TryBeginAttack(owner.debug_attackTarget, false);
+                //owner.TryBeginAttack(owner.debug_attackTarget, false);
+                owner.RequestAttack();
+            }
+            else
+            {
+                owner.RevokeAttack();
             }
         }
     }
@@ -412,6 +476,11 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
             //owner.m_navAgent.enabled = true;
             //owner.m_navAgent.updatePosition = true;
             //owner.m_navAgent.updateRotation = true;
+
+            if(owner.m_attackController.isActioning)
+            {
+                owner.m_attackController.RawCancelAction();
+            }
         }
 
         void IState<EnemyController>.Invoke(EnemyController owner)
