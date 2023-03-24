@@ -5,12 +5,15 @@ using UnityEngine;
 // I'm inspired by blackboard design pattern for all enemies to have a shared knowledge. So this class will be my own interpretation.
 public class EnemyDirector : MonoBehaviour
 {
+    // pooling
+    [Header("Pooling")]
     [SerializeField] EnemyController m_enemyPrefab;
     BBB.ObjectPool<EnemyController> m_enemyObjectPool;
     [SerializeField] int m_maxEnemyCount = 32;
+    int m_currentSpawnCount = 0;
 
-    [SerializeField] PlayerController debug_AttackTarget;
-
+    // Attack control
+    [Header("Attack Control")]
     Dictionary<EnemyController, bool> m_requestedAttacks;
     DirectorAttackQueue m_attackQueue;
 
@@ -18,7 +21,14 @@ public class EnemyDirector : MonoBehaviour
     [SerializeField] AnimationCurve m_timeVarianceCurve = AnimationCurve.Linear(0.0f, 0.5f, 1.0f, 1.0f);
     float m_timeScale = 1.0f;
 
+    // debug
+    [Header("Debug")]
+    [SerializeField] GameObject debug_AttackTarget;
+    IEntity debug_entityAttackTarget = null;
     [SerializeField] int debug_count = 0;
+
+    // getters
+    public int currentSpawnCount { get { return m_currentSpawnCount; } }
 
     private void Awake()
     {
@@ -26,6 +36,8 @@ public class EnemyDirector : MonoBehaviour
 
         m_enemyObjectPool = new BBB.ObjectPool<EnemyController>(m_maxEnemyCount, InstantiateEnemy, ActivateEnemy, DeactivateEnemy);
         m_attackQueue = new DirectorAttackQueue(m_requestedAttacks.Keys);
+
+        debug_entityAttackTarget = IEntity.ValidateGameObject(debug_AttackTarget);
     }
 
     // Start is called before the first frame update
@@ -44,7 +56,7 @@ public class EnemyDirector : MonoBehaviour
             if(enemyToAttack != null)
             {
                 // Successfully Sent Attack
-                enemyToAttack.ReceiveAttackSignal(debug_AttackTarget);
+                enemyToAttack.ReceiveAttackSignal(debug_entityAttackTarget);
 
                 m_timeScale = 1.0f / m_timeVarianceCurve.Evaluate(Random.Range(0.0f, 1.0f));
                 m_attackTimer.Reset();
@@ -69,12 +81,15 @@ public class EnemyDirector : MonoBehaviour
 
     void ActivateEnemy(ref EnemyController enemy)
     {
+        enemy.ResetEntityStats();
         enemy.gameObject.SetActive(true);
+        m_currentSpawnCount++;
     }
 
     void DeactivateEnemy(ref EnemyController enemy)
     {
         enemy.gameObject.SetActive(false);
+        m_currentSpawnCount--;
     }
     #endregion // ! ObjectPooling
 
@@ -104,12 +119,26 @@ public class EnemyDirector : MonoBehaviour
     {
         if(m_enemyObjectPool.ActivateNext(out EnemyController enemy))
         {
-            enemy.AttackFollowTarget(debug_AttackTarget);
+            enemy.AttackFollowTarget(debug_entityAttackTarget);
             return enemy;
         }
         else
         {
             return null;
+        }
+    }
+
+    public void DespawnEnemy(EnemyController enemy)
+    {
+        m_enemyObjectPool.DeactivateObject(enemy);
+    }
+
+    private void OnValidate()
+    {
+        var validEntity = IEntity.ValidateGameObject(debug_AttackTarget);
+        if(validEntity == null)
+        {
+            debug_AttackTarget = null;
         }
     }
 }

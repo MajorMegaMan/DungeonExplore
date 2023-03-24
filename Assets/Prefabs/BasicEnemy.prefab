@@ -175,18 +175,17 @@ MonoBehaviour:
   m_anim: {fileID: 3432845807080667253}
   m_hurtActionSettings: {fileID: 11400000, guid: b55d42466784c924d8fdc866e249ef33,
     type: 2}
+  m_settings: {fileID: 11400000, guid: cc7d35c6a7af7574caef02dd19b69678, type: 2}
   m_lockOnTransform: {fileID: 3432845806717990053}
   m_renderer: {fileID: 1541191907153710038}
-  m_entityRadius: 1
   m_team: 0
   m_stats:
-    m_currentHealth: 100
-    m_baseMaxHealth: 100
+    m_currentHealth: 10
+    m_baseMaxHealth: 10
     m_baseStrength: 10
-    m_baseDefense: 5
+    m_baseDefense: 0
   m_weaponHitReceiver: {fileID: 3432845805742263796}
   m_audio: {fileID: 3432845807541492206}
-  m_retargetDistance: 0.2
   debug_attackTargetObject: {fileID: 0}
   debug_revive: 0
   debug_currentState: 0

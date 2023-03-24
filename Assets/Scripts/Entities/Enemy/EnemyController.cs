@@ -24,21 +24,24 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
     MovementStateEnum m_preActionState = 0;
 
+    [SerializeField] EnemySettings m_settings;
+
     [Header("Entity")]
     [SerializeField] Transform m_lockOnTransform;
     [SerializeField] Renderer m_renderer;
-    [SerializeField] float m_entityRadius = 1.0f;
+    //[SerializeField] float m_entityRadius = 1.0f;
     [SerializeField] int m_team = 0;
     [SerializeField] EntityStats m_stats;
 
     [SerializeField] WeaponHitReceiver m_weaponHitReceiver;
     [SerializeField] SimpleAudioControl m_audio;
 
-    // Director Variables
-    EnemyDirector m_director;
-
     [Header("Movement")]
-    [SerializeField] float m_retargetDistance = 0.2f;
+    //[SerializeField] float m_retargetDistance = 0.2f;
+
+    [Header("AI States")]
+    EnemyDirector m_director;
+    //[SerializeField] float m_deadTime = 1.0f;
 
     [Header("Debug")]
     [SerializeField] GameObject debug_attackTargetObject = null;
@@ -153,7 +156,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
             position = target - (toTarget / remainDistance) * (distance);
         }
         // Only applying movement when outside the retarget distance should help remove the stuttering when standing in one location.
-        if(remainDistance > m_retargetDistance)
+        if(remainDistance > m_settings.retargetDistance)
         {
             m_navAgent.SetDestination(position);
         }
@@ -288,7 +291,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
     public float GetTargetRadius()
     {
-        return m_entityRadius;
+        return m_settings.entityRadius;
     }
 
     public int GetTeam()
@@ -350,6 +353,11 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         }
     }
 
+    public void ResetEntityStats()
+    {
+        m_stats.CopyStats(m_settings.defaultStats);
+    }
+
     void SetHeadingToNavAgent()
     {
         //if(currentSpeed > 0.0001f)
@@ -365,6 +373,12 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         {
             m_usableHeading = m_navAgent.desiredVelocity / desiredSpeed;
         }
+    }
+
+    // Used to teleport the enemy
+    public void Warp(Vector3 position)
+    {
+        m_navAgent.Warp(position);
     }
 
     #region StateMachine
@@ -491,8 +505,17 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
     class DeadState : IState<EnemyController>
     {
+        BBB.SimpleTimer m_deadTimer;
+
+        public DeadState()
+        {
+            m_deadTimer = new BBB.SimpleTimer();
+        }
+
         void IState<EnemyController>.Enter(EnemyController owner)
         {
+            m_deadTimer.targetTime = owner.m_settings.deadTime;
+            m_deadTimer.Reset();
             owner.EnterDeadState();
         }
 
@@ -503,7 +526,11 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
         void IState<EnemyController>.Invoke(EnemyController owner)
         {
-            
+            m_deadTimer.Tick(Time.deltaTime);
+            if(m_deadTimer.IsTargetReached())
+            {
+                owner.m_director.DespawnEnemy(owner);
+            }
         }
     }
 

@@ -39,7 +39,7 @@ public class EntityStats : ISerializationCallbackReceiver
 
     public bool IsDead()
     {
-        return m_currentHealth < 0;
+        return m_currentHealth <= 0;
     }
 
     public void CopyStats(EntityStats target)
