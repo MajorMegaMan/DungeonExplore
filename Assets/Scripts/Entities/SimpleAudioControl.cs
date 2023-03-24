@@ -10,12 +10,24 @@ public class SimpleAudioControl : MonoBehaviour
     [SerializeField] float m_pitchRange = 0.1f;
 
     [SerializeField] AudioClip m_hurtClip;
+    [SerializeField] AudioClip m_dieClip;
     
 
     public void PlayHurt()
     {
+        RandomisePitch();
+        m_source.PlayOneShot(m_hurtClip);
+    }
+
+    public void PlayDie()
+    {
+        RandomisePitch();
+        m_source.PlayOneShot(m_dieClip);
+    }
+
+    void RandomisePitch()
+    {
         float randPitch = Random.Range(-m_pitchRange, m_pitchRange);
         m_source.pitch = m_targetPitch + randPitch;
-        m_source.PlayOneShot(m_hurtClip);
     }
 }

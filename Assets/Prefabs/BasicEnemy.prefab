@@ -397,6 +397,7 @@ MonoBehaviour:
   m_targetPitch: 1
   m_pitchRange: 0.1
   m_hurtClip: {fileID: 8300000, guid: 5e1a2008162756c449635b2e14a03a7f, type: 3}
+  m_dieClip: {fileID: 8300000, guid: b30bbda04a0a6064b88b2b5cd3379f65, type: 3}
 --- !u!1001 &1018579811121644666
 PrefabInstance:
   m_ObjectHideFlags: 0

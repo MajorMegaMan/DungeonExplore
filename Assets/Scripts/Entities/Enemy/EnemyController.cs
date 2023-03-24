@@ -324,6 +324,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
     void Die()
     {
+        m_audio.PlayDie();
         m_movementStateMachine.ChangeToState(MovementStateEnum.dead);
     }
 
