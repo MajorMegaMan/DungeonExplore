@@ -130,6 +130,8 @@ public class DebugSplineTester : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        Color lineColour = Color.magenta;
+
         float tLimit = m_spline.points.Count - 3;
         if(m_looped)
         {
@@ -157,6 +159,8 @@ public class DebugSplineTester : MonoBehaviour
         {
             return;
         }
+
+        Gizmos.color = lineColour;
 
         // Draw Spline Line
         Vector3 prev = m_spline.GetSplinePoint(0.0f, m_looped);

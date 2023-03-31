@@ -2705,6 +2705,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4989844568282106962, guid: 112fd0b0138917a46b71b6005a49f731,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 34e88321bac401e458dcad21acf73196, type: 2}
     - target: {fileID: -4705851028463054967, guid: 112fd0b0138917a46b71b6005a49f731,
         type: 3}
       propertyPath: m_IsActive
@@ -5306,6 +5311,7 @@ GameObject:
   - component: {fileID: 1995326105}
   - component: {fileID: 1995326107}
   - component: {fileID: 1995326106}
+  - component: {fileID: 1995326108}
   m_Layer: 0
   m_Name: TruckKun
   m_TagString: Untagged
@@ -5346,6 +5352,70 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_splineCurve: {fileID: 1433650047}
   m_speed: 5
+  m_finishEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1995326108}
+        m_TargetAssemblyTypeName: DebugMessages, Assembly-CSharp
+        m_MethodName: PrintMessage
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Finshed
+          m_BoolArgument: 0
+        m_CallState: 2
+  m_checkpointEvents:
+  - m_value: 0.199
+    m_event:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1995326108}
+          m_TargetAssemblyTypeName: DebugMessages, Assembly-CSharp
+          m_MethodName: PrintMessage
+          m_Mode: 5
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: Check Point 1
+            m_BoolArgument: 0
+          m_CallState: 2
+  - m_value: 0.435
+    m_event:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1995326108}
+          m_TargetAssemblyTypeName: DebugMessages, Assembly-CSharp
+          m_MethodName: PrintMessage
+          m_Mode: 5
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: Check Point 2
+            m_BoolArgument: 0
+          m_CallState: 2
+  - m_value: 0.81
+    m_event:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1995326108}
+          m_TargetAssemblyTypeName: DebugMessages, Assembly-CSharp
+          m_MethodName: PrintMessage
+          m_Mode: 5
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: Check Point 3
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!114 &1995326107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5385,6 +5455,18 @@ MonoBehaviour:
   m_randomExplodeInfluence: 1
   debug_die: 0
   debug_revive: 0
+--- !u!114 &1995326108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1995326104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd90f4c4459aa6a4399169e153fabe28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2050708813
 GameObject:
   m_ObjectHideFlags: 0
