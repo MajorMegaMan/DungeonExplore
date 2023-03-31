@@ -26,6 +26,9 @@ public interface IEntity
     // Will possibly be changed to a collider of some sort later, for more specfic detection.
     float GetTargetRadius();
 
+    // Returns the position the attacker will try to "strike" this entity.
+    Vector3 GetAttackTargetPostion(IEntity attacker);
+
     // Used for attack targeting.
     int GetTeam();
 

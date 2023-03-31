@@ -50,6 +50,11 @@ public class EntityStats : ISerializationCallbackReceiver
         m_baseDefense   = target.m_baseDefense;
     }
 
+    public void Die()
+    {
+        m_currentHealth = 0.0f;
+    }
+
     void ISerializationCallbackReceiver.OnBeforeSerialize()
     {
 

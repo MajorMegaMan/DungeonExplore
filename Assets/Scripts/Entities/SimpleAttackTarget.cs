@@ -33,6 +33,11 @@ public class SimpleAttackTarget : MonoBehaviour, IEntity
         return m_targetRadius;
     }
 
+    public Vector3 GetAttackTargetPostion(IEntity attacker)
+    {
+        return position;
+    }
+
     public int GetTeam()
     {
         return m_team;

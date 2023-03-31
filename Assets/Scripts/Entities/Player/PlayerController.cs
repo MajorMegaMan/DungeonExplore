@@ -278,6 +278,13 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
         return m_entityRadius;
     }
 
+    public Vector3 GetAttackTargetPostion(IEntity attacker)
+    {
+        // circular attack range. good for humanoids
+        Vector3 toAttacker = attacker.position - position;
+        return position + toAttacker.normalized * GetTargetRadius();
+    }
+
     public int GetTeam()
     {
         return m_team;

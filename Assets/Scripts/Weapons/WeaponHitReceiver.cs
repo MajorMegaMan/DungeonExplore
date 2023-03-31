@@ -50,7 +50,7 @@ public class WeaponHitReceiver : MonoBehaviour
             }
             else
             {
-                Debug.LogError("GameObject does not exist in component somehow, this probvably means this method doesn't work properly. " + component.name);
+                Debug.LogError("GameObject does not exist in component somehow, this probably means this method doesn't work properly. " + component.name);
                 m_owner = null;
                 m_entityOwner = null;
             }

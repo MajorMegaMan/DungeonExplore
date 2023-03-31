@@ -146,7 +146,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     // Returns the distance remaining to the target
     float UpdateFollowMovement(float distance)
     {
-        Vector3 target = m_currentAttackTarget.position;
+        Vector3 target = m_currentAttackTarget.GetAttackTargetPostion(this);
         Vector3 toTarget = target - transform.position;
         float remainDistance = toTarget.magnitude;
 
@@ -292,6 +292,13 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     public float GetTargetRadius()
     {
         return m_settings.entityRadius;
+    }
+
+    public Vector3 GetAttackTargetPostion(IEntity attacker)
+    {
+        // circular attack range. good for humanoids
+        Vector3 toAttacker = attacker.position - position;
+        return position + toAttacker.normalized * GetTargetRadius();
     }
 
     public int GetTeam()

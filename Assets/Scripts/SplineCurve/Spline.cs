@@ -163,6 +163,13 @@ public class CustomSpline<T> where T : ISplinePoint
 		int p0, p1, p2, p3;
 		if (!looped)
 		{
+			if ((int)t >= m_points.Count - 3)
+			{
+				// change t to be a very small error before the last index, to prevent an out of range exception from occuring.
+				t = (int)t;
+				t -= 0.0001f;
+			}
+
 			p1 = (int)t + 1;
 			p2 = p1 + 1;
 			p3 = p2 + 1;
