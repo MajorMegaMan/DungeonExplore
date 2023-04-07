@@ -224,6 +224,11 @@ public class StraightAttack : IEntityMoveAction
         m_enableHitBox.Tick(m_scriptableAttackAction, t);
     }
 
+    public void EndAction(IActionable actionableEntity)
+    {
+
+    }
+
     public void CancelAction(IActionable actionableEntity)
     {
         m_enableHitBox.weaponCollider.isActive = false;
@@ -293,6 +298,11 @@ public class LockOnAttack : IEntityMoveAction
         actionableEntity.ForceMovement(Vector3.ClampMagnitude(toDestination, m_scriptableAttackAction.velocityCurve.Evaluate(t)));
 
         m_enableHitBox.Tick(m_scriptableAttackAction, t);
+    }
+
+    public void EndAction(IActionable actionableEntity)
+    {
+
     }
 
     public void CancelAction(IActionable actionableEntity)

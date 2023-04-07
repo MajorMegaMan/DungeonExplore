@@ -79,6 +79,12 @@ public class LockOnManager : BBB.VariableMonoSingletonBase<LockOnManager>
         m_visibleLockOnTargets.Clear();
         foreach (IEntity lockOnTarget in m_lockOnTargets)
         {
+            if(lockOnTarget.entityStats.IsDead())
+            {
+                // Do not lock on to dead Targets
+                continue;
+            }
+
             if (GeometryUtility.TestPlanesAABB(camFrustumPlanes, lockOnTarget.GetAABB()))
             {
                 // can see this target

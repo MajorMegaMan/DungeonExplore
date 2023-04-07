@@ -13,7 +13,7 @@ public class DebugSpawner : MonoBehaviour
     {
         for(int i = 0; i < m_initialSpawnAmount; i++)
         {
-            m_director.SpawnEnemy();
+            m_director.SpawnEnemy(transform.position, transform.forward);
         }
     }
 

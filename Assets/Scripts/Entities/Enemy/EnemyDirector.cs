@@ -11,6 +11,7 @@ public class EnemyDirector : MonoBehaviour
     BBB.ObjectPool<EnemyController> m_enemyObjectPool;
     [SerializeField] int m_maxEnemyCount = 32;
     int m_currentSpawnCount = 0;
+    List<EnemyController> m_currentSpawnedEnemies;
 
     // Attack control
     [Header("Attack Control")]
@@ -35,7 +36,10 @@ public class EnemyDirector : MonoBehaviour
         m_requestedAttacks = new Dictionary<EnemyController, bool>();
 
         m_enemyObjectPool = new BBB.ObjectPool<EnemyController>(m_maxEnemyCount, InstantiateEnemy, ActivateEnemy, DeactivateEnemy);
+        m_currentSpawnCount = 0;
+
         m_attackQueue = new DirectorAttackQueue(m_requestedAttacks.Keys);
+        m_currentSpawnedEnemies = new List<EnemyController>();
 
         debug_entityAttackTarget = IEntity.ValidateGameObject(debug_AttackTarget);
     }
@@ -76,6 +80,8 @@ public class EnemyDirector : MonoBehaviour
         m_requestedAttacks.Add(enemy, false);
         enemy.SetDirector(this);
         enemy.gameObject.SetActive(false);
+        enemy.name = enemy.entityName + " " + m_currentSpawnCount;
+        m_currentSpawnCount++;
         return enemy;
     }
 
@@ -84,12 +90,19 @@ public class EnemyDirector : MonoBehaviour
         enemy.ResetEntityStats();
         enemy.gameObject.SetActive(true);
         m_currentSpawnCount++;
+        m_currentSpawnedEnemies.Add(enemy);
+        LockOnManager.RegisterLockOnTarget(enemy);
     }
 
     void DeactivateEnemy(ref EnemyController enemy)
     {
         enemy.gameObject.SetActive(false);
         m_currentSpawnCount--;
+        m_currentSpawnedEnemies.Remove(enemy);
+        LockOnManager.DeregisterLockOnTarget(enemy);
+
+        // Revoke if needed.
+        RevokeAttack(enemy);
     }
     #endregion // ! ObjectPooling
 
@@ -115,11 +128,12 @@ public class EnemyDirector : MonoBehaviour
         }
     }
 
-    public EnemyController SpawnEnemy()
+    public EnemyController SpawnEnemy(Vector3 position, Vector3 heading)
     {
         if(m_enemyObjectPool.ActivateNext(out EnemyController enemy))
         {
             enemy.AttackFollowTarget(debug_entityAttackTarget);
+            enemy.ForceSpawnAction(position, heading);
             return enemy;
         }
         else
@@ -131,6 +145,54 @@ public class EnemyDirector : MonoBehaviour
     public void DespawnEnemy(EnemyController enemy)
     {
         m_enemyObjectPool.DeactivateObject(enemy);
+    }
+
+    public void DespawnAllEnemies()
+    {
+        // Create seperate array of current enemies
+        EnemyController[] currentEnemies = new EnemyController[m_currentSpawnedEnemies.Count];
+        {
+            int i = 0;
+            foreach (EnemyController enemy in m_currentSpawnedEnemies)
+            {
+                currentEnemies[i] = enemy;
+                i++;
+            }
+        }
+
+        // use the newly created array to remove all enemies.
+        for(int i = 0; i < currentEnemies.Length; i++)
+        {
+            DespawnEnemy(currentEnemies[i]);
+        }
+    }
+
+    public void KillAllEnemies()
+    {
+        // Create seperate array of current enemies
+        EnemyController[] currentEnemies = new EnemyController[m_currentSpawnedEnemies.Count];
+        {
+            int i = 0;
+            foreach (EnemyController enemy in m_currentSpawnedEnemies)
+            {
+                currentEnemies[i] = enemy;
+                i++;
+            }
+        }
+
+        // use the newly created array to remove all enemies.
+        for (int i = 0; i < currentEnemies.Length; i++)
+        {
+            currentEnemies[i].Die();
+        }
+    }
+
+    public void ResetDirector()
+    {
+        // Resets all values to make an empty director.
+        DespawnAllEnemies();
+
+        m_attackTimer.Reset();
     }
 
     private void OnValidate()

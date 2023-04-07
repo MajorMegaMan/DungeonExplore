@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 
 public class PayloadController : MonoBehaviour, IEntity
 {
@@ -39,17 +40,31 @@ public class PayloadController : MonoBehaviour, IEntity
     public Vector3 heading { get { return velocity.normalized; } }
     public EntityStats entityStats { get { return m_stats; } }
 
-    private void Start()
+    public float progressionValue { get { return m_motor.value; } }
+
+    public UnityEvent finishEvent { get { return m_motor.finishEvent; } }
+    public PayloadMotor.Checkpoint[] checkpoints { get { return m_motor.checkpoints; } }
+
+    private void Awake()
     {
         EnableRigidBodyParts(false);
         SetOriginPositions();
-
-        m_motor.speed = m_speed;
+        StopMoving();
     }
 
     private void Update()
     {
         m_navObstacle.velocity = velocity;
+    }
+
+    public void StartMoving()
+    {
+        m_motor.speed = m_speed;
+    }
+
+    public void StopMoving()
+    {
+        m_motor.speed = 0.0f;
     }
 
     #region IEntity
@@ -162,10 +177,15 @@ public class PayloadController : MonoBehaviour, IEntity
 
         EnableRigidBodyParts(false);
 
-        m_motor.speed = m_speed;
         ResetRigidBodyPositions();
 
         m_stats.HealToFull();
+    }
+
+    public void ResetPayload()
+    {
+        m_motor.ResetProgression();
+        Revive();
     }
 
     private void OnValidate()

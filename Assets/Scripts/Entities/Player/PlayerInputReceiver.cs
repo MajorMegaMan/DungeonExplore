@@ -8,6 +8,8 @@ public class PlayerInputReceiver : InputReceiver
     Transform m_viewInputTransform = null;
     [SerializeField] float m_minimumMovementMagnitude = 0.01f;
 
+    public bool inputsDisabled = false;
+
     public Camera playerViewCamera 
     { 
         get 
@@ -44,6 +46,11 @@ public class PlayerInputReceiver : InputReceiver
     #region ReadInputs
     public override Vector3 GetMovement()
     {
+        if(inputsDisabled)
+        {
+            return Vector3.zero;
+        }
+
         Vector3 moveInput = Vector3.zero;
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.z = Input.GetAxisRaw("Vertical");
@@ -64,6 +71,11 @@ public class PlayerInputReceiver : InputReceiver
 
     public override Vector2 GetMouseLook()
     {
+        if (inputsDisabled)
+        {
+            return Vector2.zero;
+        }
+
         Vector2 mouseLook = Vector2.zero;
         mouseLook.x = Input.GetAxisRaw("Mouse X");
         mouseLook.y = Input.GetAxisRaw("Mouse Y");
@@ -72,6 +84,11 @@ public class PlayerInputReceiver : InputReceiver
 
     public override Vector2 GetGamepadLook()
     {
+        if (inputsDisabled)
+        {
+            return Vector2.zero;
+        }
+
         return Vector2.zero;
     }
 
@@ -85,6 +102,11 @@ public class PlayerInputReceiver : InputReceiver
 
     public override bool GetAttack()
     {
+        if (inputsDisabled)
+        {
+            return false;
+        }
+
         bool attackInput = Input.GetAxisRaw("Fire1") != 0;
 
         return attackInput;
@@ -92,11 +114,19 @@ public class PlayerInputReceiver : InputReceiver
 
     public override bool GetJump()
     {
+        if (inputsDisabled)
+        {
+            return false;
+        }
         return Input.GetKeyDown(KeyCode.Space);
     }
 
     public bool GetLockOnDown()
     {
+        if (inputsDisabled)
+        {
+            return false;
+        }
         return Input.GetKeyDown(KeyCode.Tab);
     }
     #endregion // ! ReadInputs

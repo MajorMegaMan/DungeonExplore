@@ -61,6 +61,9 @@ public class PayloadMotor : MonoBehaviour
 
     public Vector3 velocity { get { return m_next.normalized * speed; } }
 
+    public UnityEvent finishEvent { get { return m_finishEvent; } }
+    public Checkpoint[] checkpoints { get { return m_checkpointEvents.ToArray(); } }
+
     private void Awake()
     {
         OrderCheckpoints();
@@ -145,6 +148,12 @@ public class PayloadMotor : MonoBehaviour
         {
             this.m_value = Mathf.Clamp(value, 0.0f, 1.0f);
         }
+    }
+
+    public void ResetProgression()
+    {
+        SetValue(0.0f);
+        nextCheckPointIndex = 0;
     }
 
     private void OnDrawGizmos()

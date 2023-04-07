@@ -261,6 +261,19 @@ public class PlayerController : PlayerBehaviour, IActionable, IEntity
         }
     }
 
+    public void Warp(Vector3 position, Quaternion rotation)
+    {
+        m_characterControl.enabled = false;
+        transform.SetPositionAndRotation(position, rotation);
+        m_heading = transform.forward;
+        m_characterControl.enabled = true;
+    }
+
+    public void StopVelocity()
+    {
+        m_velocity = Vector3.zero;
+    }
+
     #region IEntity
     static Bounds _zeroBounds = new Bounds();
     public Bounds GetAABB()

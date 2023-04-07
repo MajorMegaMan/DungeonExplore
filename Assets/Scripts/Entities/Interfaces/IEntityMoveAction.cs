@@ -11,5 +11,6 @@ public interface IEntityMoveAction
 
     void BeginAction(IActionable actionableEntity, IEntity target);
     void PerformAction(IActionable actionableEntity, float t);
+    void EndAction(IActionable actionableEntity);
     void CancelAction(IActionable actionableEntity);
 }

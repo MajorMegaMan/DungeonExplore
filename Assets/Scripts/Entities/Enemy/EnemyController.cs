@@ -20,6 +20,9 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     [SerializeField] ScriptableMoveAction m_hurtActionSettings;
     HurtAction m_hurtAction;
 
+    [SerializeField] ScriptableMoveAction m_spawnActionSettings;
+    SpawnAction m_spawnAction;
+
     //[SerializeField] SimpleLockOnTarget m_targetComponent;
 
     MovementStateEnum m_preActionState = 0;
@@ -67,7 +70,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
     private void Awake()
     {
-        LockOnManager.RegisterLockOnTarget(this);
+        //LockOnManager.RegisterLockOnTarget(this);
 
         m_selfTargeter = this;
 
@@ -81,6 +84,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         m_entityAttack.Initialise(transform, this);
 
         m_hurtAction = new HurtAction(transform, m_hurtActionSettings);
+        m_spawnAction = new SpawnAction(this, m_anim, m_spawnActionSettings);
     }
 
     // Start is called before the first frame update
@@ -329,7 +333,16 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     }
     #endregion // ! IEntity
 
-    void Die()
+    public void ForceSpawnAction(Vector3 position, Vector3 heading)
+    {
+        Warp(position);
+        m_attackController.ForceBeginAction(m_spawnAction, null);
+        m_spawnAction.Animate(m_anim.anim);
+
+        m_usableHeading = heading;
+    }
+
+    public void Die()
     {
         m_audio.PlayDie();
         m_movementStateMachine.ChangeToState(MovementStateEnum.dead);
@@ -340,7 +353,6 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         m_weaponHitReceiver.gameObject.SetActive(false);
         m_navAgent.enabled = false;
         m_anim.SetAnimToDeath();
-        LockOnManager.DeregisterLockOnTarget(this);
     }
 
     void ExitDeadState()
@@ -348,7 +360,6 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         m_weaponHitReceiver.gameObject.SetActive(true);
         m_navAgent.enabled = true;
         m_anim.SetAnimToMovement();
-        LockOnManager.RegisterLockOnTarget(this);
     }
 
     public void Revive()
@@ -397,6 +408,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         follow,
         attackFollow,
         action,
+        spawning,
         dead
     }
 

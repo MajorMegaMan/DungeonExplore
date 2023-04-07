@@ -71,6 +71,13 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
 
         if (m_lockOnTarget != null)
         {
+            if(m_lockOnTarget.entityStats.IsDead())
+            {
+                // if dead remove LockOn
+                SetLockOnTarget(null);
+                return;
+            }
+
             // Bill board the lock on image towards the camera.
             Vector3 pos = m_lockOnTarget.GetCameraLookTransform().position;
             m_currentCamDistance = (pos - m_origin.position).magnitude;

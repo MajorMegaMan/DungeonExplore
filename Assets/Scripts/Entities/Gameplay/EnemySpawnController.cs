@@ -60,10 +60,22 @@ public class EnemySpawnController : MonoBehaviour
     void MiniWaveSpawn()
     {
         m_currentMiniWaveRemain--;
-        EnemyController enemy = m_director.SpawnEnemy();
-        if (enemy != null)
+        EnemyController enemy = m_director.SpawnEnemy(m_spawnZone.FindRandomSpawnPosition(), m_spawnZone.FindRandomHeading());
+    }
+
+    public void ForceSpawn(int count)
+    {
+        for(int i = 0; i < count; i++)
         {
-            enemy.Warp(m_spawnZone.FindRandomSpawnPosition());
+            m_director.SpawnEnemy(m_spawnZone.FindRandomSpawnPosition(), m_spawnZone.FindRandomHeading());
         }
+    }
+
+    public void ResetSpawner()
+    {
+        m_waveTimer.Reset();
+        m_miniWaveTimer.Reset();
+
+        m_currentMiniWaveRemain = 0;
     }
 }

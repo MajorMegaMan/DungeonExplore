@@ -293,6 +293,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_playerViewCamera: {fileID: 0}
   m_minimumMovementMagnitude: 0.01
+  inputsDisabled: 0
 --- !u!1 &8729045210558697209
 GameObject:
   m_ObjectHideFlags: 0
@@ -484,14 +485,15 @@ MonoBehaviour:
   m_team: 0
   m_stats:
     m_currentHealth: 100
-    m_maxHealth: 100
-    m_strength: 10
-    m_defense: 5
+    m_baseMaxHealth: 100
+    m_baseStrength: 10
+    m_baseDefense: 5
   m_hurtActionSettings: {fileID: 11400000, guid: b55d42466784c924d8fdc866e249ef33,
     type: 2}
   m_weaponHitReceiver: {fileID: 7502755780238859759}
   m_navMeshObstacle: {fileID: 1066229203420419561}
   debug_invulnerable: 0
+  debug_revive: 0
 --- !u!143 &8729045210709861424
 CharacterController:
   m_ObjectHideFlags: 0
@@ -682,7 +684,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 906805134404629199}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8b820a468f5aff409b0ff69b8c33154, type: 3}
   m_Name: 

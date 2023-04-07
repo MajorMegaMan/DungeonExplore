@@ -90,6 +90,7 @@ public class ActionController
 
         if (m_actionTimer.IsTargetReached())
         {
+            m_currentAction.EndAction(m_actionableEntity);
             m_currentAction = null;
             // Must set isAction to false before calling end.
             m_isActioning = false;

@@ -175,6 +175,8 @@ MonoBehaviour:
   m_anim: {fileID: 3432845807080667253}
   m_hurtActionSettings: {fileID: 11400000, guid: b55d42466784c924d8fdc866e249ef33,
     type: 2}
+  m_spawnActionSettings: {fileID: 11400000, guid: ffca48fbcdb370a43bb108637d2b58cc,
+    type: 2}
   m_settings: {fileID: 11400000, guid: cc7d35c6a7af7574caef02dd19b69678, type: 2}
   m_lockOnTransform: {fileID: 3432845806717990053}
   m_renderer: {fileID: 1541191907153710038}

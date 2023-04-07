@@ -2,26 +2,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HurtAction : IEntityMoveAction
+public class SpawnAction : IEntityMoveAction
 {
     ScriptableMoveAction m_scriptableMoveAction;
     int m_animationHashID = 0;
     int m_animationDriveParameter = 0;
 
-    Transform m_origin;
-    Vector3 m_direction;
+    EntityAnimate m_entityAnim;
+    IEntity m_owner;
 
-    public string actionName { get { return "HurtAction"; } }
+    Vector3 m_destination;
 
-    public HurtAction(Transform origin, ScriptableMoveAction scriptableMoveAction)
+    public string actionName { get { return "SpawnAction"; } }
+
+    public SpawnAction(IEntity owner, EntityAnimate entityAnim, ScriptableMoveAction scriptableMoveAction)
     {
-        this.m_origin = origin;
+        m_owner = owner;
+        m_entityAnim = entityAnim;
         SetMoveAction(scriptableMoveAction);
-    }
-
-    public void SetDirection(Vector3 direction)
-    {
-        this.m_direction = direction;
     }
 
     public void SetMoveAction(ScriptableMoveAction scriptableMoveAction)
@@ -38,7 +36,7 @@ public class HurtAction : IEntityMoveAction
 
     public Vector3 GetDestination()
     {
-        return m_origin.position + m_direction;
+        return m_owner.position;
     }
 
     public float GetTimeSpeed()
@@ -48,30 +46,26 @@ public class HurtAction : IEntityMoveAction
 
     public void BeginAction(IActionable actionableEntity, IEntity target)
     {
-        if (target == null)
-        {
-            SetDirection(actionableEntity.GetActionHeading());
-        }
-        else
-        {
-            var toTarget = target.position - actionableEntity.position;
-            SetDirection(toTarget.normalized);
-        }
+        m_destination = m_owner.position;
     }
 
     public void PerformAction(IActionable actionableEntity, float t)
     {
-        actionableEntity.ForceMovement(Vector3.ClampMagnitude(-m_direction, m_scriptableMoveAction.velocityCurve.Evaluate(t)));
+        float heightOffset = m_scriptableMoveAction.velocityCurve.Evaluate(1.0f - t);
+
+        Vector3 height = Vector3.up * -heightOffset;
+
+        m_entityAnim.transform.localPosition = height;
     }
 
     public void EndAction(IActionable actionableEntity)
     {
-
+        m_entityAnim.transform.localPosition = Vector3.zero;
     }
 
     public void CancelAction(IActionable actionableEntity)
     {
-        
+        m_entityAnim.transform.localPosition = Vector3.zero;
     }
 
     public void Animate(Animator anim)
