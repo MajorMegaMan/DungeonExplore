@@ -154,6 +154,7 @@ public class PayloadMotor : MonoBehaviour
     {
         SetValue(0.0f);
         nextCheckPointIndex = 0;
+        m_hasHitFinish = false;
     }
 
     private void OnDrawGizmos()
