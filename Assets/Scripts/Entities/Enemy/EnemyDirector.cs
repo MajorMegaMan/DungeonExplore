@@ -25,6 +25,11 @@ public class EnemyDirector : BBB.SimpleMonoSingleton<EnemyDirector>
     // Zones
     List<EnemySpawnController> m_activeSpawnControllers;
 
+    [Header("Targets")]
+    // This is the target the enemies should chase if they are attacking a singular targte. The payload is a good example.
+    IEntity m_absoluteTarget;
+    [SerializeField] float m_minAbsoluteAggro = 15.0f;
+
     // debug
     [Header("Debug")]
     [SerializeField] GameObject debug_AttackTarget;
@@ -33,6 +38,8 @@ public class EnemyDirector : BBB.SimpleMonoSingleton<EnemyDirector>
 
     // getters
     public int currentSpawnCount { get { return m_currentSpawnCount; } }
+    public IEntity absoluteTarget { get { return m_absoluteTarget; } set { m_absoluteTarget = value; } }
+
 
     protected override void Awake()
     {
@@ -92,6 +99,7 @@ public class EnemyDirector : BBB.SimpleMonoSingleton<EnemyDirector>
         enemy.gameObject.SetActive(false);
         enemy.name = enemy.entityName + " " + m_currentSpawnCount;
         m_currentSpawnCount++;
+
         return enemy;
     }
 
@@ -99,9 +107,15 @@ public class EnemyDirector : BBB.SimpleMonoSingleton<EnemyDirector>
     {
         enemy.ResetEntityStats();
         enemy.gameObject.SetActive(true);
+        enemy.aggro.ResetAggro();
         m_currentSpawnCount++;
         m_currentSpawnedEnemies.Add(enemy);
         LockOnManager.RegisterLockOnTarget(enemy);
+
+        if (absoluteTarget != null && enemy.chaseAbsoluteTarget)
+        {
+            enemy.aggro.RegisterEntity(absoluteTarget, 0.0f, m_minAbsoluteAggro);
+        }
     }
 
     void DeactivateEnemy(ref EnemyController enemy)
@@ -144,7 +158,8 @@ public class EnemyDirector : BBB.SimpleMonoSingleton<EnemyDirector>
     {
         if(m_enemyObjectPool.ActivateNext(out EnemyController enemy))
         {
-            enemy.AttackFollowTarget(debug_entityAttackTarget);
+            enemy.StopDoingAnything();
+            //enemy.AttackFollowTarget(debug_entityAttackTarget);
             enemy.ForceSpawnAction(position, heading);
             return enemy;
         }
@@ -205,6 +220,11 @@ public class EnemyDirector : BBB.SimpleMonoSingleton<EnemyDirector>
         DespawnAllEnemies();
 
         m_attackTimer.Reset();
+    }
+
+    public void FindRandomAttackTarget()
+    {
+
     }
 
     private void OnValidate()

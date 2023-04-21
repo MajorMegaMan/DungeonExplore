@@ -41,6 +41,9 @@ public class GameManager : BBB.SimpleMonoSingleton<GameManager>
     // Start is called before the first frame update
     void Start()
     {
+        // Set enemies to constantly chase payload if doing nothing.
+        EnemyDirector.instance.absoluteTarget = payload;
+
         m_spawner.enabled = false;
         m_payload.StopMoving();
 

@@ -45,10 +45,12 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     [Header("AI States")]
     EnemyDirector m_director;
     //[SerializeField] float m_deadTime = 1.0f;
+    [SerializeField] AggressionTargeter m_aggroTargeter;
+    [SerializeField] bool m_chaseAbsoluteTarget = true;
 
     [Header("Debug")]
-    [SerializeField] GameObject debug_attackTargetObject = null;
-    IEntity debug_attackTarget = null;
+    //[SerializeField] GameObject debug_attackTargetObject = null;
+    //IEntity debug_attackTarget = null;
 
     [SerializeField] bool debug_revive = false;
     public MovementStateEnum debug_currentState;
@@ -63,6 +65,8 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     public Vector3 heading { get { return m_usableHeading; } }
     public EntityStats entityStats { get { return m_stats; } }
 
+    public AggressionTargeter aggro { get { return m_aggroTargeter; } }
+    public bool chaseAbsoluteTarget { get { return m_chaseAbsoluteTarget; } }
 
     ILockOnTargeter m_selfTargeter;
     IEntity m_lockOnTarget;
@@ -90,14 +94,14 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
     // Start is called before the first frame update
     void Start()
     {
-        if(debug_attackTargetObject != null)
-        {
-            debug_attackTarget = debug_attackTargetObject.GetComponent<IEntity>();
-            if (debug_attackTarget != null)
-            {
-                AttackFollowTarget(debug_attackTarget);
-            }
-        }
+        //if(debug_attackTargetObject != null)
+        //{
+        //    debug_attackTarget = debug_attackTargetObject.GetComponent<IEntity>();
+        //    if (debug_attackTarget != null)
+        //    {
+        //        AttackFollowTarget(debug_attackTarget);
+        //    }
+        //}
 
         m_navAgent.updateRotation = false;
     }
@@ -131,10 +135,10 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         {
             m_director.RequestAttack(this);
         }
-        else
-        {
-            TryBeginAttack(debug_attackTarget, false);
-        }
+        //else
+        //{
+        //    TryBeginAttack(debug_attackTarget, false);
+        //}
     }
 
     void RevokeAttack()
@@ -368,7 +372,7 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
         if (m_movementStateMachine.GetCurrentState() == MovementStateEnum.dead)
         {
             // Debug Switch to auto aggro
-            AttackFollowTarget(debug_attackTarget);
+            AttackFollowTarget(m_aggroTargeter.target);
         }
     }
 
@@ -441,6 +445,13 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
         void IState<EnemyController>.Invoke(EnemyController owner)
         {
+            owner.m_currentAttackTarget = owner.m_aggroTargeter.target;
+            if (owner.m_currentAttackTarget != null)
+            {
+                owner.AttackFollowTarget(owner.m_currentAttackTarget);
+                return;
+            }
+
             owner.SetHeadingToNavAgent();
         }
     }
@@ -459,6 +470,13 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
         void IState<EnemyController>.Invoke(EnemyController owner)
         {
+            owner.m_currentAttackTarget = owner.m_aggroTargeter.target;
+            if (owner.m_currentAttackTarget == null)
+            {
+                owner.StopDoingAnything();
+                return;
+            }
+
             owner.SetHeadingToNavAgent();
 
             var distance = owner.m_currentAttackTarget.GetTargetRadius() + owner.GetTargetRadius();
@@ -480,6 +498,13 @@ public class EnemyController : MonoBehaviour, IActionable, IEntity, ILockOnTarge
 
         void IState<EnemyController>.Invoke(EnemyController owner)
         {
+            owner.m_currentAttackTarget = owner.m_aggroTargeter.target;
+            if (owner.m_currentAttackTarget == null)
+            {
+                owner.StopDoingAnything();
+                return;
+            }
+
             owner.SetHeadingToNavAgent();
 
             var distance = owner.m_currentAttackTarget.GetTargetRadius() + owner.GetTargetRadius();
