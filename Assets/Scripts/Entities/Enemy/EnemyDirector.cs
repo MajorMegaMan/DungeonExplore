@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // I'm inspired by blackboard design pattern for all enemies to have a shared knowledge. So this class will be my own interpretation.
-public class EnemyDirector : MonoBehaviour
+public class EnemyDirector : BBB.SimpleMonoSingleton<EnemyDirector>
 {
     // pooling
     [Header("Pooling")]
@@ -22,6 +22,9 @@ public class EnemyDirector : MonoBehaviour
     [SerializeField] AnimationCurve m_timeVarianceCurve = AnimationCurve.Linear(0.0f, 0.5f, 1.0f, 1.0f);
     float m_timeScale = 1.0f;
 
+    // Zones
+    List<EnemySpawnController> m_activeSpawnControllers;
+
     // debug
     [Header("Debug")]
     [SerializeField] GameObject debug_AttackTarget;
@@ -31,8 +34,9 @@ public class EnemyDirector : MonoBehaviour
     // getters
     public int currentSpawnCount { get { return m_currentSpawnCount; } }
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         m_requestedAttacks = new Dictionary<EnemyController, bool>();
 
         m_enemyObjectPool = new BBB.ObjectPool<EnemyController>(m_maxEnemyCount, InstantiateEnemy, ActivateEnemy, DeactivateEnemy);
@@ -42,12 +46,18 @@ public class EnemyDirector : MonoBehaviour
         m_currentSpawnedEnemies = new List<EnemyController>();
 
         debug_entityAttackTarget = IEntity.ValidateGameObject(debug_AttackTarget);
+
+        m_activeSpawnControllers = new List<EnemySpawnController>();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        if(debug_AttackTarget == null)
+        {
+            debug_AttackTarget = GameManager.instance.player.gameObject;
+            debug_entityAttackTarget = IEntity.ValidateGameObject(debug_AttackTarget);
+        }
     }
 
     // Update is called once per frame
@@ -128,6 +138,8 @@ public class EnemyDirector : MonoBehaviour
         }
     }
 
+    #region Spawning
+
     public EnemyController SpawnEnemy(Vector3 position, Vector3 heading)
     {
         if(m_enemyObjectPool.ActivateNext(out EnemyController enemy))
@@ -166,7 +178,7 @@ public class EnemyDirector : MonoBehaviour
             DespawnEnemy(currentEnemies[i]);
         }
     }
-
+    #endregion // Spawning
     public void KillAllEnemies()
     {
         // Create seperate array of current enemies

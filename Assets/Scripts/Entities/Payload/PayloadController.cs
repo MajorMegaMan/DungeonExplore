@@ -42,8 +42,8 @@ public class PayloadController : MonoBehaviour, IEntity
 
     public float progressionValue { get { return m_motor.value; } }
 
-    public UnityEvent finishEvent { get { return m_motor.finishEvent; } }
-    public PayloadMotor.Checkpoint[] checkpoints { get { return m_motor.checkpoints; } }
+    //public UnityEvent finishEvent { get { return m_motor.finishEvent; } }
+    //public PayloadMotor.Checkpoint[] checkpoints { get { return m_motor.checkpoints; } }
 
     private void Awake()
     {
@@ -57,6 +57,7 @@ public class PayloadController : MonoBehaviour, IEntity
         m_navObstacle.velocity = velocity;
     }
 
+    #region Motor
     public void StartMoving()
     {
         m_motor.speed = m_speed;
@@ -66,6 +67,17 @@ public class PayloadController : MonoBehaviour, IEntity
     {
         m_motor.speed = 0.0f;
     }
+
+    public void SetPath(PayloadSpline path)
+    {
+        m_motor.SetPath(path);
+    }
+
+    public PayloadSpline GetPath()
+    {
+        return m_motor.GetPath();
+    }
+    #endregion // Motor
 
     #region IEntity
     public Bounds GetAABB()

@@ -5,54 +5,14 @@ using UnityEngine.Events;
 
 public class PayloadMotor : MonoBehaviour
 {
-    [SerializeField] DebugSplineTester m_splineCurve;
+    [SerializeField] PayloadSpline m_splineCurve;
 
     [SerializeField] float m_speed = 1.0f;
     float m_value = 0.0f;
 
-    [Header("CheckPoints")]
-    [SerializeField] UnityEvent m_finishEvent;
+    // Checkpointing
     bool m_hasHitFinish = false;
-
-    [SerializeField] List<Checkpoint> m_checkpointEvents;
-
     int nextCheckPointIndex = 0;
-
-    [System.Serializable]
-    public class Checkpoint
-    {
-        [SerializeField, Range(0.0f, 1.0f)] float m_value;
-        [SerializeField] UnityEvent m_event;
-
-        public float value { get { return m_value; } }
-        public UnityEvent checkpointEvent { get { return m_event; } }
-
-        static CheckpointCompare _comparer;
-        internal static CheckpointCompare Comparer { get { return _comparer; } }
-
-        static Checkpoint()
-        {
-            _comparer = new CheckpointCompare();
-        }
-
-        internal class CheckpointCompare : IComparer<Checkpoint>
-        {
-            int IComparer<Checkpoint>.Compare(Checkpoint lhs, Checkpoint rhs)
-            {
-                return lhs.m_value.CompareTo(rhs.m_value);
-            }
-        }
-
-        internal bool ProcessCheckPoint(float value)
-        {
-            if (value > m_value)
-            {
-                m_event.Invoke();
-                return true;
-            }
-            return false;
-        }
-    }
 
     public float speed { get { return m_speed; } set { m_speed = value; } }
     public float value { get { return m_value; } }
@@ -61,12 +21,8 @@ public class PayloadMotor : MonoBehaviour
 
     public Vector3 velocity { get { return m_next.normalized * speed; } }
 
-    public UnityEvent finishEvent { get { return m_finishEvent; } }
-    public Checkpoint[] checkpoints { get { return m_checkpointEvents.ToArray(); } }
-
     private void Awake()
     {
-        OrderCheckpoints();
         nextCheckPointIndex = 0;
     }
 
@@ -92,19 +48,20 @@ public class PayloadMotor : MonoBehaviour
         t += Time.deltaTime * (speed / lineLength);
 
         float nextValue = t / splineCount;
-        if(nextValue > 1.0f)
-        {
-            if (!m_hasHitFinish)
-            {
-                m_finishEvent.Invoke();
-                m_hasHitFinish = !m_splineCurve.looped;
-            }
-            else if(m_splineCurve.looped)
-            {
-                m_finishEvent.Invoke();
-                nextCheckPointIndex = nextCheckPointIndex % m_checkpointEvents.Count;
-            }
-        }
+        //if(nextValue > 1.0f)
+        //{
+        //    if (!m_hasHitFinish)
+        //    {
+        //        m_splineCurve.InvokeFinishEvent();
+        //        m_hasHitFinish = !m_splineCurve.looped;
+        //    }
+        //    else if(m_splineCurve.looped)
+        //    {
+        //        m_splineCurve.InvokeFinishEvent();
+        //        nextCheckPointIndex = nextCheckPointIndex % m_checkpointEvents.Count;
+        //    }
+        //}
+        m_splineCurve.ProcessFinish(nextValue, ref m_hasHitFinish, ref nextCheckPointIndex);
 
         ProcessCheckPoint(nextValue);
 
@@ -120,19 +77,9 @@ public class PayloadMotor : MonoBehaviour
         m_next = m_splineCurve.GetSplineGradient(t);
     }
 
-    void OrderCheckpoints()
-    {
-        m_checkpointEvents.Sort(Checkpoint.Comparer);
-    }
-
     void ProcessCheckPoint(float value)
     {
-        if(nextCheckPointIndex >= m_checkpointEvents.Count)
-        {
-            return;
-        }
-
-        if(m_checkpointEvents[nextCheckPointIndex].ProcessCheckPoint(value))
+        if(m_splineCurve.ProcessCheckPoint(nextCheckPointIndex, value))
         {
             nextCheckPointIndex++;
         }
@@ -157,30 +104,13 @@ public class PayloadMotor : MonoBehaviour
         m_hasHitFinish = false;
     }
 
-    private void OnDrawGizmos()
+    public void SetPath(PayloadSpline path)
     {
-        for(int i = 0; i < m_checkpointEvents.Count; i++)
-        {
-            float t = m_checkpointEvents[i].value * m_splineCurve.GetLineCount();
-            Vector3 position = m_splineCurve.GetSplinePoint(t);
+        m_splineCurve = path;
+    }
 
-            Color colour = Color.yellow;
-            Gizmos.color = colour;
-            Gizmos.DrawSphere(position, 0.3f);
-
-            colour.a *= 0.4f;
-            Gizmos.color = colour;
-            Gizmos.DrawWireSphere(position, 0.3f);
-        }
-
-        Vector3 finishPosition = m_splineCurve.GetSplinePoint(m_splineCurve.GetLineCount());
-
-        Color finishColour = Color.red;
-        Gizmos.color = finishColour;
-        Gizmos.DrawSphere(finishPosition, 0.3f);
-
-        finishColour.a *= 0.4f;
-        Gizmos.color = finishColour;
-        Gizmos.DrawWireSphere(finishPosition, 0.3f);
+    public PayloadSpline GetPath()
+    {
+        return m_splineCurve;
     }
 }

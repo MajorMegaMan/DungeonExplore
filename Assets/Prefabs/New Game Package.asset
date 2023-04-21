@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1ce01b41a285684f9f3872e26cb88e7, type: 3}
+  m_Name: New Game Package
+  m_EditorClassIdentifier: 
+  m_gameManager: {fileID: 3954103185222243698, guid: ad55aac5e21132945b6b64c254c85c45,
+    type: 3}
+  m_player: {fileID: 8729045210709861428, guid: 67be9991cea1c95498a8db55aed87308,
+    type: 3}
+  m_camera: {fileID: 1979346755007482513, guid: e0a954e15254ac64eb832f981caada81,
+    type: 3}
+  m_virtualCamera: {fileID: 0}
+  m_payload: {fileID: 1633139760424784870, guid: 507c68b53daee9343b97cabe3296738e,
+    type: 3}
+  m_payloadPath: {fileID: 4068382098702672810, guid: 9642a31dcb5b0b34e9944064db50d455,
+    type: 3}
+  m_spawnZone: {fileID: 8171345050717751221, guid: 0adf613151f8230438a389e17210d689,
+    type: 3}
+  m_spawner: {fileID: 801295634447396065, guid: 1ba4401f26df93441a7c997b742b3d5d,
+    type: 3}

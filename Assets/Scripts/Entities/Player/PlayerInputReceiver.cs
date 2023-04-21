@@ -33,6 +33,11 @@ public class PlayerInputReceiver : InputReceiver
 
     private void Awake()
     {
+        if (m_playerViewCamera == null)
+        {
+            m_playerViewCamera = Camera.main;
+        }
+
         if (m_playerViewCamera != null)
         {
             m_viewInputTransform = m_playerViewCamera.transform;

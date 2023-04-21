@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EnemySpawnController : MonoBehaviour
 {
-    [SerializeField] EnemyDirector m_director;
+    EnemyDirector m_director;
 
     BBB.SimpleTimer m_waveTimer;
     BBB.SimpleTimer m_miniWaveTimer;
@@ -14,6 +14,9 @@ public class EnemySpawnController : MonoBehaviour
     [SerializeField] SpawnZone m_spawnZone;
     [SerializeField] SpawnControllerSettings m_settings;
 
+    delegate void InternalUpdateAction();
+    InternalUpdateAction m_internalUpdateDelegate;
+
     private void Awake()
     {
         m_waveTimer = new BBB.SimpleTimer();
@@ -22,14 +25,26 @@ public class EnemySpawnController : MonoBehaviour
         m_waveTimer.targetTime = m_settings.waveSeperationTime;
     }
 
-    // Start is called before the first frame update
-    void Start()
+    private void OnEnable()
     {
-
+        m_director = EnemyDirector.instance;
+        if (m_director != null)
+        {
+            m_internalUpdateDelegate = InternalUpdate;
+        }
+        else
+        {
+            m_internalUpdateDelegate = InternalUpdateFindDirector;
+        }
     }
 
     // Update is called once per frame
     void Update()
+    {
+        m_internalUpdateDelegate.Invoke();
+    }
+
+    void InternalUpdate()
     {
         m_waveTimer.Tick(Time.deltaTime);
         if (m_waveTimer.IsTargetReached())
@@ -49,6 +64,23 @@ public class EnemySpawnController : MonoBehaviour
                 MiniWaveSpawn();
             }
         }
+    }
+
+    void InternalUpdateFindDirector()
+    {
+        m_director = EnemyDirector.instance;
+        if(m_director == null)
+        {
+            return;
+        }
+
+        m_internalUpdateDelegate = InternalUpdate;
+        InternalUpdate();
+    }
+
+    public void SetSpawnZone(SpawnZone spawnZone)
+    {
+        m_spawnZone = spawnZone;
     }
 
     public void InitiateMiniWave(int currentActiveAgentCount)
