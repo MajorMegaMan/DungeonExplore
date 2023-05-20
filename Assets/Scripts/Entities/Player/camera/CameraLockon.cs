@@ -22,6 +22,11 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
     [SerializeField] float m_smoothTime = 0.1f;
     Vector2 m_smoothVelocity = Vector2.zero;
 
+    [SerializeField] Color m_lockOnColour = Color.red;
+    [SerializeField] Color m_quickTargetColour = new Color(1.0f, 1.0f, 0.0f, 0.4f);
+
+    // switches when the player presses the button.
+    bool m_isLockedOnMode = false;
 
     float m_currentCamDistance = 0.0f;
 
@@ -43,6 +48,16 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
     void Start()
     {
         m_lockOnReticle.SetCamera(inputReceiver.playerViewCamera);
+
+        // Set the reticle colour
+        if (m_isLockedOnMode)
+        {
+            m_lockOnReticle.SetColour(m_lockOnColour);
+        }
+        else
+        {
+            m_lockOnReticle.SetColour(m_quickTargetColour);
+        }
     }
 
     private void OnDestroy()
@@ -53,36 +68,75 @@ public class CameraLockon : MonoBehaviour, ILockOnTargeter
     // Update is called once per frame
     void Update()
     {
+        if (!m_isLockedOnMode)
+        {
+            // Search for quick lock target.
+            var lockOnTarget = LockOnManager.FindLockOnTarget(inputReceiver.playerViewCamera);
+            SetLockOnTarget(lockOnTarget);
+        }
+
         if (inputReceiver.GetLockOnDown())
         {
-            if (!isLockedOn)
+            // input from player. Set the lock mode to the current quick lock target.
+            m_isLockedOnMode = !m_isLockedOnMode;
+            if (m_isLockedOnMode)
             {
-                var lockOnTarget = LockOnManager.FindLockOnTarget(inputReceiver.playerViewCamera);
-                if (lockOnTarget != null)
-                {
-                    SetLockOnTarget(lockOnTarget);
-                }
+                m_lockOnReticle.SetColour(m_lockOnColour);
             }
             else
             {
-                SetLockOnTarget(null);
+                m_lockOnReticle.SetColour(m_quickTargetColour);
             }
+            //if (!isLockedOn)
+            //{
+            //
+            //    var lockOnTarget = LockOnManager.FindLockOnTarget(inputReceiver.playerViewCamera);
+            //    SetLockOnTarget(lockOnTarget);
+            //}
+            //else
+            //{
+            //    SetLockOnTarget(null);
+            //}
         }
 
         if (m_lockOnTarget != null)
         {
             if(m_lockOnTarget.entityStats.IsDead())
             {
-                // if dead remove LockOn
-                SetLockOnTarget(null);
+                // if dead remove LockOn from current target
+                if (m_isLockedOnMode)
+                {
+                    // Search for new lock on target if player is in lock on mode.
+                    var lockOnTarget = LockOnManager.FindLockOnTarget(inputReceiver.playerViewCamera);
+                    SetLockOnTarget(lockOnTarget);
+                }
+                else
+                {
+                    SetLockOnTarget(null);
+                }
+
                 return;
             }
 
-            // Bill board the lock on image towards the camera.
-            Vector3 pos = m_lockOnTarget.GetCameraLookTransform().position;
-            m_currentCamDistance = (pos - m_origin.position).magnitude;
-            SetLockOnPosition(pos);
-            SetRotation(pos);
+            // if the player has locked on to the quick target, then update the camera to view the target.
+            if(m_isLockedOnMode)
+            {
+                // Bill board the lock on image towards the camera.
+                Vector3 pos = m_lockOnTarget.GetCameraLookTransform().position;
+                m_currentCamDistance = (pos - m_origin.position).magnitude;
+                SetLockOnPosition(pos);
+                SetRotation(pos);
+            }
+            else
+            {
+                // This is un optimised but needs to currently be here.
+                m_camControl.cinemachineCameraTarget.transform.position = m_origin.position;
+            }
+        }
+        else
+        {
+            // This is un optimised but needs to currently be here.
+            m_camControl.cinemachineCameraTarget.transform.position = m_origin.position;
         }
     }
 
